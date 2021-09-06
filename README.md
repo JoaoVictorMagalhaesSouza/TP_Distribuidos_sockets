@@ -4,5 +4,5 @@
 #### Os arquivos "mainServer.py" e "mainCliente.py" simulam a comunicação Cliente-Servidor.
 
 ## Para executar:
-#### .Execute o arquivo "mainServer.py" e, posteriormente, "mainCliente.py".
-#### .No arquvio "mainCliente.py" execuntando no terminal, você pode simular operações de teste como +, -, * e /.
+#### 1. Execute o arquivo "mainServer.py" e, posteriormente, "mainCliente.py".
+#### 2. No arquvio "mainCliente.py" execuntando no terminal, você pode simular operações de teste como +, -, * e /.
