@@ -10,9 +10,9 @@
 ## Modelagem das Entidades no Banco de Dados
 
 
-| Table Usuário  |      Table Leilão      | Table Loja | Table Mochila|
-|:----------:|:-------------:||:----------:|:-------------:|
-| <b>inteiro:</b> <i>id</i> |  left-aligned | a | b |
-| <b>string:</b> <i>nickname</i> |    centered   | c | d |
-| <b>string:</b> <i>password</i> | right-aligned | e | f |
+| Table Usuário  |      Table Leilão      | Table Loja |
+|:----------:|:-------------:|:-------------:|
+| <b>inteiro:</b> <i>id</i> |  left-aligned | Teste |
+| <b>string:</b> <i>nickname</i> |    centered   | Teste |
+| <b>string:</b> <i>password</i> | right-aligned | Teste |
   
