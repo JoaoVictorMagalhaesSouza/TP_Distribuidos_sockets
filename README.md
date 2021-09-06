@@ -6,3 +6,13 @@
 ## Para executar:
 #### 1. Execute o arquivo "mainServer.py" e, posteriormente, "mainCliente.py".
 #### 2. No arquvio "mainCliente.py" executando no terminal, você pode simular operações de teste como +, -, * e /.
+
+## Modelagem das Entidades no Banco de Dados
+
+
+| Table Usuário  |      Table Leilão      |
+|:----------:|:-------------:|
+| id |  left-aligned |
+| nickname |    centered   |
+| password | right-aligned |
+  
