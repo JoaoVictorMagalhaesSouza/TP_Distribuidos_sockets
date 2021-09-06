@@ -12,7 +12,7 @@
 
 | Table Usuário  |      Table Leilão      |
 |:----------:|:-------------:|
-| id |  left-aligned |
-| nickname |    centered   |
-| password | right-aligned |
+| inteiro: id |  left-aligned |
+| string: nickname |    centered   |
+| string: password | right-aligned |
   
