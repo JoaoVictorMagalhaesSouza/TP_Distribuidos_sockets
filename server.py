@@ -4,11 +4,11 @@ class Server():
 
     def __init__(self, host, port) :
         #Construtor
-        self.host = host
-        self.port = port
+        self._host = host
+        self._port = port
         self._tcp = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 
-    def start():
+    def start(self):
         #Inicia o serviço do servidor
         endpoint = (self._host, self._port) #Definir uma porta específica para o serviço 
         try:
