@@ -23,7 +23,7 @@ class Cliente():
                     continue
                 elif mensagem=="x":
                     break
-                self.__tcp.send(bytes(mensagem,"ascii"))
+                self.__tcp.send(bytes(mensagem,'ascii'))
                 resposta = self.__tcp.recv(1024)
                 print(f"= {resposta.decode('ascii')}")
             self.__tcp.close()

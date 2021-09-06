@@ -27,15 +27,16 @@ class Server():
         operadores = ["+","-","*","/"]
         while True:
             try:
-                mensagem = con.recv(104) #Recebendo a mensagem do cliente, dados brutos, fluxo de bytes
-                mensagem_decodificada = str(mensagem.decode("ascii")) #Bytes representam caracteres
+                mensagem = con.recv(1024) #Recebendo a mensagem do cliente, dados brutos, fluxo de bytes
+                mensagem_decodificada = str(mensagem.decode('ascii')) #Bytes representam caracteres
                 #É importante criar uma formatação da mensagem enviada pelo cliente
                 #Exemplo: 15+5 onde 15 é o operando1, "+" operador e 5 o operando2
                 #Logo, a mensagem é da forma: operando1operadoroperando2
                 for x in operadores:
                     if mensagem_decodificada.find(x) > 0:
                         op = x
-                        mensagem_decodificada.split(op)
+                        mensagem_decodificada = mensagem_decodificada.split(op)
+                        print("Mensagem decodificada",mensagem_decodificada)
                         break
                 if op=="+":
                     resposta = float(mensagem_decodificada[0]) + float(mensagem_decodificada[1])
@@ -48,7 +49,7 @@ class Server():
                 else:
                     resposta = "Operação inválida"
 
-                con.send(bytes(str(resposta),"ascii")) #Converter a resposta para bytes também.
+                con.send(bytes(str(resposta),'ascii')) #Converter a resposta para bytes também.
                 print(f"{cliente} -> requisição atendida !")
 
             except OSError as os: #Erros de conexão (envio ou recebimento dos dados, divisão por 0, algum caractere invalido)
@@ -56,4 +57,4 @@ class Server():
                 return 
             except Exception as e:
                 print(f"Erro nos dados recebidos do cliente {cliente}:{e.args}")
-                con.send(bytes("Erro","ascii"))
+                con.send(bytes("Erro",'ascii'))
