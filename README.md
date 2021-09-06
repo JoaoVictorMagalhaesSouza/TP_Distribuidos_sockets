@@ -18,4 +18,5 @@
 | <b>string:</b> <i>password</i> | right-aligned | Teste | Teste | Teste |
 | <b>string:</b> <i>nome</i> |    centered   | Teste | Teste | Teste |
 | <b>string:</b> <i>email</i> |    centered   | Teste | Teste | Teste |
+| |    centered   |  |  |  |
   
