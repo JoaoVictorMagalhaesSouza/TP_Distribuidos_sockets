@@ -5,4 +5,4 @@
 
 ## Para executar:
 #### 1. Execute o arquivo "mainServer.py" e, posteriormente, "mainCliente.py".
-#### 2. No arquvio "mainCliente.py" execuntando no terminal, você pode simular operações de teste como +, -, * e /.
+#### 2. No arquvio "mainCliente.py" executando no terminal, você pode simular operações de teste como +, -, * e /.
