@@ -10,7 +10,7 @@
 ## Modelagem das Entidades no Banco de Dados
 
 
-| Table Usuário  |      Table Leilão      | Table Loja | Table Mochila | Table Álbum | Table Cartas |
+| Table Usuário  |      Table Leilão      | Table Loja | Table Mochila | Table Álbum | Table Carta |
 |:----------:|:-------------:|:-------------:|:-------------:|:-------------:|:-------------:|
 | <b>inteiro:</b> <i>id</i> |  left-aligned | Teste | Teste | Teste | Teste |
 | <b>double:</b> <i>coins</i> | right-aligned | Teste | Teste | Teste |  Teste |
