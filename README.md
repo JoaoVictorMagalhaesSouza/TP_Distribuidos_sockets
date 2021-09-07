@@ -10,13 +10,13 @@
 ## Modelagem das Entidades no Banco de Dados
 
 
-| Table Usuário  |      Table Leilão      | Table Loja | Table Mochila | Table Álbum | Table Carta |
-|:----------:|:-------------:|:-------------:|:-------------:|:-------------:|:-------------:|
-| <b>inteiro:</b> <i>id</i> |  left-aligned | Teste | Teste | Teste | Teste |
-| <b>inteiro:</b> <i>coins</i> | right-aligned | Teste | Teste | Teste |  Teste |
-| <b>string:</b> <i>nickname</i> |    centered   | Teste | Teste | Teste | Teste |
-| <b>string:</b> <i>password</i> | right-aligned | Teste | Teste | Teste | Teste |
-| <b>string:</b> <i>nome</i> |    centered   | Teste | Teste | Teste | Teste |
-| <b>string:</b> <i>email</i> |    centered   | Teste | Teste | Teste | Teste |
-| |    centered   |  |  |  | |
+| Table Usuário  |      Table Leilão      | Table Loja | Table Mochila | Table Álbum | Table Carta | Table Paradigma |
+|:----------:|:-------------:|:-------------:|:-------------:|:-------------:|:-------------:|:-------------:|
+| <b>inteiro:</b> <i>id</i> |  left-aligned | Teste | Teste | Teste | Teste | Teste |
+| <b>inteiro:</b> <i>coins</i> | right-aligned | Teste | Teste | Teste |  Teste | Teste | 
+| <b>string:</b> <i>nickname</i> |    centered   | Teste | Teste | Teste | Teste | Teste |
+| <b>string:</b> <i>password</i> | right-aligned | Teste | Teste | Teste | Teste | Teste |
+| <b>string:</b> <i>nome</i> |    centered   | Teste | Teste | Teste | Teste | Teste |
+| <b>string:</b> <i>email</i> |    centered   | Teste | Teste | Teste | Teste | Teste |
+| |    centered   |  |  |  | | Teste |
   
