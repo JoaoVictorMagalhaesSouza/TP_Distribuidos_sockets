@@ -1,4 +1,6 @@
 import socket
+import mysql.connector
+from mysql.connector import Error
 
 class Server():
 
@@ -8,6 +10,7 @@ class Server():
         self._port = port
         self._tcp = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 
+        
     def start(self):
         #Inicia o serviço do servidor
         endpoint = (self._host, self._port) #Definir uma porta específica para o serviço 
@@ -15,6 +18,25 @@ class Server():
             self._tcp.bind(endpoint)
             self._tcp.listen(1) #Possíveis conexões
             print(f"Servidor iniciado em {self._host}:{self._port}")
+            try:
+                connection = mysql.connector.connect(host='localhost',
+                                            database='bd_distribuidos',
+                                            user='root',
+                                            password='JVictor@00')
+                if connection.is_connected():
+                    db_Info = connection.get_server_info()
+                    print("Connected to MySQL Server version ", db_Info)
+                    cursor = connection.cursor()
+                    cursor.execute("select database();")
+                    record = cursor.fetchone()
+                    print("You're connected to database: ", record)
+            except Error as e:
+                print("Error while connecting to MySQL", e)
+            finally:
+                if connection.is_connected():
+                        cursor.close()
+                        connection.close()
+                        print("MySQL connection is closed")
             while True:
                 con, cliente = self._tcp.accept() #Con é informações do cliente | cliente é ip e porta do cliente
                 self._service(con,cliente) # Executar os serviços.
