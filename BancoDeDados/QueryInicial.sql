@@ -18,3 +18,9 @@ SELECT * FROM album_has_slot;
 #Agora mudaremos o status de ocupado para True do slot 1 no album 1.
 UPDATE album_has_slot SET is_ocupado=True WHERE (Album_idAlbum=1 and Slot_idSlot=1); 
 SELECT * FROM album_has_slot;
+
+#Criar mochila
+INSERT INTO mochila values() ;
+SELECT * FROM mochila ;
+
+SELECT * from usuario;
