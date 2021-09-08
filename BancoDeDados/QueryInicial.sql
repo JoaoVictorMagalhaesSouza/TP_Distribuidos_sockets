@@ -1,23 +1,20 @@
 USE bd_distribuidos;
-
-INSERT INTO mochila  values ();
-SELECT * FROM mochila ;
-#ALTER TABLE slot ADD is_ocupado BOOLEAN ;
-INSERT INTO carta (nome,descricao,allstar) values("Java","Horrivel",True);
-SELECT * from carta;
-INSERT INTO slot (Carta_idCarta,is_ocupado)values (1,False);
+#Criar as cartas todas :
+INSERT INTO carta (nome,descricao,allstar) values ("Ruby","Teste",True),
+("C","Teste",False);
+#Criar os slots das cartas:
+INSERT INTO slot (Carta_idCarta)values (1),(2);
 SELECT * from slot;
-
-INSERT INTO album (idAlbum,Slot_idSlot) values(1,2);
-SELECT * from album;
-
-INSERT INTO usuario (coins,nickname,password,nome,email,Mochila_idMochila,
-					Album_idAlbum
-                    ) values (200,"OBrabo","jv","João","jv@gmail.com",1,1);
-select * from usuario;
-
-SELECT * from slot ;
-SELECT * from album;
-update slot set slot.is_ocupado=False;
-SELECT * from album where (album.idAlbum=1 and album.Slot_idSlot=1);
-update album,slot set slot.is_ocupado = True WHERE (album.idAlbum=1)
+#Criar o album de novo usuário:
+INSERT INTO album values();
+INSERT INTO album values();
+SELECT * FROM album;
+#Adicionar uma carta em um slot de um album específico(de um usuário, no caso):
+#Album 1, slot 1, carta 1, ocupado False
+#Album 2, slot 1, carta 1, ocupado False
+INSERT INTO album_has_slot values (1,1,1,False);
+INSERT INTO album_has_slot values (2,1,1,False);
+SELECT * FROM album_has_slot;
+#Agora mudaremos o status de ocupado para True do slot 1 no album 1.
+UPDATE album_has_slot SET is_ocupado=True WHERE (Album_idAlbum=1 and Slot_idSlot=1); 
+SELECT * FROM album_has_slot;
