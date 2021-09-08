@@ -4,6 +4,8 @@ import socket
 import mysql.connector
 from mysql.connector import Error as db_error
 
+#Python e MySQL : https://pynative.com/python-mysql-insert-data-into-database-table/
+
 class Server():
 
     def __init__(self, host, port) :
@@ -45,7 +47,6 @@ class Server():
     def __cadastro(self,cursor,connection):
         query = """INSERT INTO usuario (coins,nickname,password,nome,email,Mochila_idMochila,Album_idAlbum) values """+"""(20000,"CoCriator","Unamed","Unamed1234","melhordetodos@gmail.com",1,1);"""
         print(f"{query}")
-        print("1")
         result = cursor.execute(query)
         connection.commit()
         print("Query executada")
