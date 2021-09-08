@@ -17,12 +17,12 @@ class Cliente():
     def __method(self):# __ é privado
         try:
             mensagem = ""
+            mensagem = input("Digite a operação: ")
             while mensagem!="x":
-                print("cadastro:coins:nickname:password:nome:email:idMochila:idAlbum")
-                mensagem = input("Digite a operação: ")
                 self.__tcp.send(bytes(mensagem,'ascii'))
-                resposta = self.__tcp.recv(1024)
+                resposta = self.__tcp.recv(2048)
                 print(f"= {resposta.decode('ascii')}")
+                mensagem = input("Digite a operação: ")
             self.__tcp.close()
         except Exception as e:
             print(f"Houve um erro na comunicação {e.args}")

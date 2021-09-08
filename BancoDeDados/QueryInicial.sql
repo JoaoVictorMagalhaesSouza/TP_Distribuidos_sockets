@@ -24,4 +24,3 @@ INSERT INTO mochila values() ;
 SELECT * FROM mochila ;
 
 SELECT * from usuario;
-SELECT * from Usuario where ();

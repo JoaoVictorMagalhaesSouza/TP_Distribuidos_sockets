@@ -44,33 +44,17 @@ class Server():
         except Exception as e:
             print(f"Erro ao inicializar o server: {e.args}")
 
-    def __cadastro(self,cursor,connection,coins,nickname,password,nome,email,Mochila_idMochila,Album_idAlbum):
-        query = """INSERT INTO usuario (coins,nickname,password,nome,email,Mochila_idMochila,Album_idAlbum) values ("""+coins+",'"+nickname+"','"+password+"','"+nome+"','"+email+"',"+Mochila_idMochila+","+Album_idAlbum+""");"""
-        print(f"{query}")
-        try:
-            result = cursor.execute(query)
-            connection.commit()
-            print("Query executada")
-            return("Cadastro realizado com sucesso !")
-        except db_error:
-            return("Erro ao realizar o cadastro !")                 
-        
-    def __login(self,cursor,connection,nickname,senha):
-        query = """SELECT * FROM usuario WHERE (nickname='"""+nickname+"'"+" and password='"+senha+"');"
-        print(f"{query}")
-        try:
-            result = cursor.execute(query)
-            resultados = cursor.fetchall()
-            print("Query executada")
-            return("Login realizado com sucesso !")
-        except db_error:
-            return("Erro ao realizar o login !")  
     def _service(self,con,cliente,cursor,connection):
         #Método dos serviços do servidor (banco de dados)
         print(f"Atendendo o cliente {cliente}")
         try:
-            mensagem = con.recv(1024) #Recebendo a mensagem do cliente, dados brutos, fluxo de bytes
+            mensagem = con.recv(2048) #Recebendo a mensagem do cliente, dados brutos, fluxo de bytes
             mensagem_decodificada = str(mensagem.decode('ascii')) #Bytes representam caracteres
+            """
+                A nossa ideia é splitar a mensagem com ":".
+                Mensagem de login -> login:usuario:senha
+                Mensagem de cadastro-> cadastro:coins:nickname:password:nome:email:Mochila_idMochila:Album_idAlbum
+            """
             msg = mensagem_decodificada.split(":") #Nossa mensagem é da forma: acao:operadores:...
             print(f"Mensagem: {msg}")
             if (msg[0]=="cadastro"):
@@ -88,4 +72,48 @@ class Server():
             print(f"Erro na conexão {cliente}:{os.args}")
             return 
         
+   #################################################################################################################################
+    """
+        Seção para criarmos as funcionalidades do servidor de cadastro, login, etc :
+    """
     
+    def __cadastro(self,cursor,connection,coins,nickname,password,nome,email,Mochila_idMochila,Album_idAlbum):
+        """
+            Montando a query de inserção no Banco de Dados  :
+        """
+        query = """INSERT INTO usuario (coins,nickname,password,nome,email,Mochila_idMochila,Album_idAlbum) values ("""+coins+",'"+nickname+"','"+password+"','"+nome+"','"+email+"',"+Mochila_idMochila+","+Album_idAlbum+""");"""
+        print(f"{query}")
+        """
+           Tentar executar a query de inserção:     
+        """
+        try:
+            result = cursor.execute(query)
+            connection.commit()
+            print("Query executada")
+            return("Cadastro realizado com sucesso !")
+        except db_error:
+            return("Erro ao realizar o cadastro !")                 
+        
+    def __login(self,cursor,connection,nickname,senha):
+        """
+            Formato padrão da query de seleção
+        """
+        query = """SELECT * FROM usuario WHERE (nickname='"""+nickname+"'"+" and password='"+senha+"');"
+        print(f"{query}")
+        """
+            Tentando executar a query de seleção
+        """
+        try:
+            result = cursor.execute(query)
+            """
+                Retorna uma lista com os registros encontrados:
+            """
+            resultados = cursor.fetchall()
+            """
+                PRÓXIMO PASSO: MANDAR ESSAS INFORMAÇÕES DE LOGIN PARA SEREM CARREGADAS NA NOSSA TELA INICIAL DO GAME
+                PARA PODER CARREGAR O ALBUM DESSE USUÁRIO, SUA MOCHILA E DEMAIS INFORMAÇÕES.
+            """           
+            return("Login realizado com sucesso !")
+        except db_error:
+            return("Erro ao realizar o login !")  
+        
