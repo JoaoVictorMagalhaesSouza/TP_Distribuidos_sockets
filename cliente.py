@@ -18,11 +18,8 @@ class Cliente():
         try:
             mensagem = ""
             while mensagem!="x":
+                print("cadastro:coins:nickname:password:nome:email:idMochila:idAlbum")
                 mensagem = input("Digite a operação: ")
-                if mensagem=="":
-                    continue
-                elif mensagem=="x":
-                    break
                 self.__tcp.send(bytes(mensagem,'ascii'))
                 resposta = self.__tcp.recv(1024)
                 print(f"= {resposta.decode('ascii')}")

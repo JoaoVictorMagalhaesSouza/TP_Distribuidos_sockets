@@ -44,15 +44,17 @@ class Server():
         except Exception as e:
             print(f"Erro ao inicializar o server: {e.args}")
 
-    def __cadastro(self,cursor,connection):
-        query = """INSERT INTO usuario (coins,nickname,password,nome,email,Mochila_idMochila,Album_idAlbum) values """+"""(20000,"CoCriator","Unamed","Unamed1234","melhordetodos@gmail.com",1,1);"""
+    def __cadastro(self,cursor,connection,coins,nickname,password,nome,email,Mochila_idMochila,Album_idAlbum):
+        query = """INSERT INTO usuario (coins,nickname,password,nome,email,Mochila_idMochila,Album_idAlbum) values ("""+coins+",'"+nickname+"','"+password+"','"+nome+"','"+email+"',"+Mochila_idMochila+","+Album_idAlbum+""");"""
         print(f"{query}")
-        result = cursor.execute(query)
-        connection.commit()
-        print("Query executada")
+        try:
+            result = cursor.execute(query)
+            connection.commit()
+            print("Query executada")
+            return("Cadastro realizado com sucesso !")
+        except db_error:
+            return("Erro ao realizar o cadastro !")                 
         
-                      
-
    
 
     
@@ -62,7 +64,10 @@ class Server():
         try:
             mensagem = con.recv(1024) #Recebendo a mensagem do cliente, dados brutos, fluxo de bytes
             mensagem_decodificada = str(mensagem.decode('ascii')) #Bytes representam caracteres
-            self.__cadastro(cursor,connection)
+            msg = mensagem_decodificada.split(":") #Nossa mensagem é da forma: acao:operadores:...
+            print(f"Mensagem: {msg}")
+            if (msg[0]=="cadastro"):
+                resposta = self.__cadastro(cursor,connection,msg[1],msg[2],msg[3],msg[4],msg[5],msg[6],msg[7])
             
 
            
@@ -74,7 +79,5 @@ class Server():
         except OSError as os: #Erros de conexão (envio ou recebimento dos dados, divisão por 0, algum caractere invalido)
             print(f"Erro na conexão {cliente}:{os.args}")
             return 
-        except Exception as e:
-            print(f"Erro nos dados recebidos do cliente {cliente}:{e.args}")
-            con.send(bytes("Erro",'ascii'))
+        
     
