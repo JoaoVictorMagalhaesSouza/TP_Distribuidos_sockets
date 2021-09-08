@@ -55,9 +55,16 @@ class Server():
         except db_error:
             return("Erro ao realizar o cadastro !")                 
         
-   
-
-    
+    def __login(self,cursor,connection,nickname,senha):
+        query = """SELECT * FROM usuario WHERE (nickname='"""+nickname+"'"+" and password='"+senha+"');"
+        print(f"{query}")
+        try:
+            result = cursor.execute(query)
+            resultados = cursor.fetchall()
+            print("Query executada")
+            return("Login realizado com sucesso !")
+        except db_error:
+            return("Erro ao realizar o login !")  
     def _service(self,con,cliente,cursor,connection):
         #Método dos serviços do servidor (banco de dados)
         print(f"Atendendo o cliente {cliente}")
@@ -68,7 +75,8 @@ class Server():
             print(f"Mensagem: {msg}")
             if (msg[0]=="cadastro"):
                 resposta = self.__cadastro(cursor,connection,msg[1],msg[2],msg[3],msg[4],msg[5],msg[6],msg[7])
-            
+            elif (msg[0]=="login"):
+                resposta = self.__login(cursor,connection,msg[1],msg[2])
 
            
             con.send(bytes(str(resposta),'ascii')) #Converter a resposta para bytes também.

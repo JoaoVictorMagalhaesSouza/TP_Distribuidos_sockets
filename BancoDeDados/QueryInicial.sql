@@ -24,4 +24,4 @@ INSERT INTO mochila values() ;
 SELECT * FROM mochila ;
 
 SELECT * from usuario;
-INSERT INTO usuario (coins,nickname,password,nome,email,Mochila_idMochila,Album_idAlbum) values (2000000,Admin,admin,Administrador,"admin@ufv.br",2,2);
+SELECT * from Usuario where ();
