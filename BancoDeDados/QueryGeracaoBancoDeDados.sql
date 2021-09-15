@@ -66,7 +66,7 @@ ENGINE = InnoDB;
 CREATE TABLE IF NOT EXISTS `BD_Distribuidos`.`Carta` (
   `idCarta` INT NOT NULL AUTO_INCREMENT,
   `nome` VARCHAR(45) NOT NULL,
-  `descricao` VARCHAR(45) NOT NULL,
+  `descricao` VARCHAR(200) NOT NULL,
   `allstar` TINYINT NOT NULL,
   PRIMARY KEY (`idCarta`))
 ENGINE = InnoDB;

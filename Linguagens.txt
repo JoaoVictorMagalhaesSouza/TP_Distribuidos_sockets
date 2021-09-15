@@ -1,0 +1,32 @@
+Ruby	OK
+Objective-C	OK
+Go	OK
+Smalltalk	OK
+Kotlin	OK
+Fortran	Ok
+C#	OK
+C	OK
+C++	OK
+PHP	OK
+TypeScript OK
+Elixir OK
+Lua	OK
+Haskell OK
+Erlang 	OK
+R	OK
+Perl
+Scala
+Rust
+Julia
+ADA
+Delphi
+Visual Basic
+Python
+Java
+Javascript
+Cobol
+Paskal
+Algol
+Dart
+
+n precisa pensar em modelo fisico. pequeno nicho7
