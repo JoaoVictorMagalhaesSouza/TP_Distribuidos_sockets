@@ -46,31 +46,32 @@ class Server():
 
     def _service(self,con,cliente,cursor,connection):
         #Método dos serviços do servidor (banco de dados)
-        print(f"Atendendo o cliente {cliente}")
-        try:
-            mensagem = con.recv(2048) #Recebendo a mensagem do cliente, dados brutos, fluxo de bytes
-            mensagem_decodificada = str(mensagem.decode('ascii')) #Bytes representam caracteres
-            """
-                A nossa ideia é splitar a mensagem com ":".
-                Mensagem de login -> login:usuario:senha
-                Mensagem de cadastro-> cadastro:coins:nickname:password:nome:email
-            """
-            msg = mensagem_decodificada.split(":") #Nossa mensagem é da forma: acao:operadores:...
-            print(f"Mensagem: {msg}")
-            if (msg[0]=="cadastro"):
-                resposta = self.__cadastro(cursor,connection,msg[1],msg[2],msg[3],msg[4],msg[5])
-            elif (msg[0]=="login"):
-                resposta = self.__login(cursor,connection,msg[1],msg[2])
-
-           
-            con.send(bytes(str(resposta),'ascii')) #Converter a resposta para bytes também.
-            print(f"{cliente} -> requisição atendida !")
+        while True:
+            print(f"Atendendo o cliente {cliente}")
+            try:
+                mensagem = con.recv(2048) #Recebendo a mensagem do cliente, dados brutos, fluxo de bytes
+                mensagem_decodificada = str(mensagem.decode('ascii')) #Bytes representam caracteres
+                """
+                    A nossa ideia é splitar a mensagem com ":".
+                    Mensagem de login -> login:usuario:senha
+                    Mensagem de cadastro-> cadastro:coins:nickname:password:nome:email
+                """
+                msg = mensagem_decodificada.split(":") #Nossa mensagem é da forma: acao:operadores:...
+                print(f"Mensagem: {msg}")
+                if (msg[0]=="cadastro"):
+                    resposta = self.__cadastro(cursor,connection,msg[1],msg[2],msg[3],msg[4],msg[5])
+                elif (msg[0]=="login"):
+                    resposta = self.__login(cursor,connection,msg[1],msg[2])
 
             
+                con.send(bytes(str(resposta),'ascii')) #Converter a resposta para bytes também.
+                print(f"{cliente} -> requisição atendida !")
 
-        except OSError as os: #Erros de conexão (envio ou recebimento dos dados, divisão por 0, algum caractere invalido)
-            print(f"Erro na conexão {cliente}:{os.args}")
-            return 
+                
+
+            except OSError as os: #Erros de conexão (envio ou recebimento dos dados, divisão por 0, algum caractere invalido)
+                print(f"Erro na conexão {cliente}:{os.args}")
+                return 
         
    #################################################################################################################################
     """
@@ -88,7 +89,7 @@ class Server():
             cursor.execute(queryVerificacao)
             verificacao = cursor.fetchall()
             #print(f"Numero de registros: {len(verificacao)}")
-            if (len(verificacao)>1):
+            if (len(verificacao)>0): 
                 return("======> Nickname ja existente! Tente novamente.")
             else:            
                 """
@@ -103,7 +104,6 @@ class Server():
                     Pegando o id do último album inserido
                 """
                 
-                #query_idAlbum = """"""
                 cursor = connection.cursor()
                 cursor.execute("SELECT MAX(idAlbum) AS ultimoValor FROM album")
                 resultado = cursor.fetchall()
@@ -137,14 +137,14 @@ class Server():
             
                 
         except db_error:
-            return("Erro ao realizar o cadastro !")                 
+            return("=====> Erro ao realizar o cadastro !")                 
         
     def __login(self,cursor,connection,nickname,senha):
         """
             Formato padrão da query de seleção
         """
         query = """SELECT * FROM usuario WHERE (nickname='"""+nickname+"'"+" and password='"+senha+"');"
-        print(f"{query}")
+        #print(f"{query}")
         """
             Tentando executar a query de seleção
         """
@@ -154,11 +154,14 @@ class Server():
                 Retorna uma lista com os registros encontrados:
             """
             resultados = cursor.fetchall()
-            """
-                PRÓXIMO PASSO: MANDAR ESSAS INFORMAÇÕES DE LOGIN PARA SEREM CARREGADAS NA NOSSA TELA INICIAL DO GAME
-                PARA PODER CARREGAR O ALBUM DESSE USUÁRIO, SUA MOCHILA E DEMAIS INFORMAÇÕES.
-            """           
-            return("Login realizado com sucesso !")
+            if(len(resultados)>0):
+                """
+                    PRÓXIMO PASSO: MANDAR ESSAS INFORMAÇÕES DE LOGIN PARA SEREM CARREGADAS NA NOSSA TELA INICIAL DO GAME
+                    PARA PODER CARREGAR O ALBUM DESSE USUÁRIO, SUA MOCHILA E DEMAIS INFORMAÇÕES.
+                """           
+                return("=====> Login realizado com sucesso !")
+            else:
+                return("=====> Nao foi possivel realizar login !")
         except db_error:
-            return("Erro ao realizar o login !")  
+            return("=====> Erro ao realizar o login !")  
         
