@@ -58,7 +58,7 @@ class Server():
             msg = mensagem_decodificada.split(":") #Nossa mensagem é da forma: acao:operadores:...
             print(f"Mensagem: {msg}")
             if (msg[0]=="cadastro"):
-                resposta = self.__cadastro(cursor,connection,msg[1],msg[2],msg[3],msg[4],msg[5],msg[6],msg[7])
+                resposta = self.__cadastro(cursor,connection,msg[1],msg[2],msg[3],msg[4],msg[5])
             elif (msg[0]=="login"):
                 resposta = self.__login(cursor,connection,msg[1],msg[2])
 
@@ -77,20 +77,53 @@ class Server():
         Seção para criarmos as funcionalidades do servidor de cadastro, login, etc :
     """
     
-    def __cadastro(self,cursor,connection,coins,nickname,password,nome,email,Mochila_idMochila,Album_idAlbum):
-        """
-            Montando a query de inserção no Banco de Dados  :
-        """
-        query = """INSERT INTO usuario (coins,nickname,password,nome,email,Mochila_idMochila,Album_idAlbum) values ("""+coins+",'"+nickname+"','"+password+"','"+nome+"','"+email+"',"+Mochila_idMochila+","+Album_idAlbum+""");"""
-        print(f"{query}")
-        """
-           Tentar executar a query de inserção:     
-        """
+    def __cadastro(self,cursor,connection,coins,nickname,password,nome,email):
         try:
+            """
+                Primeiramente, criaremos o álbum desse usuário:
+            """
+            queryCriaAlbum = """INSERT INTO album VALUES();"""
+            result = cursor.execute(queryCriaAlbum)
+            connection.commit()
+            #print("Query executada")
+            print("==> Álbum criado com sucesso !")
+            """
+                Pegando o id do último album inserido
+            """
+            
+            #query_idAlbum = """"""
+            cursor = connection.cursor()
+            cursor.execute("SELECT MAX(idAlbum) AS ultimoValor FROM album")
+            resultado = cursor.fetchall()
+            for id in resultado:
+                resultado = id[0]
+            """
+                Setando as cartas nos slots respectivos desse usuário
+            """
+            for i in range(1,31):
+                queryInsertSlot = """INSERT INTO album_has_slot values (""" +str(resultado)+""","""+str(i)+""","""+str(i)+""",False);"""
+                #print(queryInsertSlot)
+                result = cursor.execute(queryInsertSlot)
+                connection.commit()
+            print("==> Slots iniciados com sucesso!")
+            """
+                Criando a mochila desse usuário
+            """
+            queryCriaMochila = """INSERT INTO mochila values();"""
+            result = cursor.execute(queryCriaMochila)
+            connection.commit()
+            print("==> Mochila criada com sucesso !")
+            """
+                Montando a query de inserção do usuário em sino Banco de Dados  :
+            """
+            query = """INSERT INTO usuario (coins,nickname,password,nome,email,Mochila_idMochila,Album_idAlbum) values ("""+coins+",'"+nickname+"','"+password+"','"+nome+"','"+email+"',"+str(resultado)+","+str(resultado)+""");"""
+            print(f"{query}")
             result = cursor.execute(query)
             connection.commit()
-            print("Query executada")
-            return("Cadastro realizado com sucesso !")
+            print("===> Todas as querys foram executadas")
+            return("=====> Cadastro realizado com sucesso !")
+            
+                
         except db_error:
             return("Erro ao realizar o cadastro !")                 
         

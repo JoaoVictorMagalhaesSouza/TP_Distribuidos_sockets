@@ -30,3 +30,4 @@ INSERT INTO carta_has_paradigma VALUES
 (29,2),
 (30,7)
 ;
+SELECT * FROM carta_has_paradigma order by Carta_idCarta;
