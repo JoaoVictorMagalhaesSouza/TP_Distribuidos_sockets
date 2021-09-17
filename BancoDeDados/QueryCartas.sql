@@ -14,6 +14,20 @@ INSERT INTO carta (nome,descricao,allstar) values
 ("LUA", "print('Hello World')",False),
 ("Haskell", "Prelude> putStrLn 'Hello World'",True),
 ("Erlang","-module(hello). -export([hello_world/0]). hello_world() -> io:fwrite('hello, world\n').",False),
-("R","print('Hello World!')",True)
+("R","print('Hello World!')",False),
+("Perl","use strict; use warnings; print('Hello World');",False),
+("Scala","object Hello { def main(args: Array[String]) = { println('Hello, world') } }",False),
+("Rust","fn main() { println!('Hello World'); }",False),
+("Julia","print('Hello World')",False),
+("ADA","with Text_IO; use Text_IO; procedure hello is begin Put_Line('Hello world!'); end hello;",True),
+("Delphi","program HelloWorld; {$APPTYPE CONSOLE} begin WriteLn('Hello World'); end.",False),
+("Visual Basic","Imports System Module Module1 Sub Main() Console.WriteLine('Hello World!') End Sub End Module",False),
+("Python","print('Hello World')",True),
+("Java","class Simple { public static void main(String args[]) { System.out.println('Hello World'); } }",True),
+("JavaScript","console.log('Hello World')",True),
+("COBOL","display 'Hello World'",False),
+("Paskal","program Hello; begin writeln ('Hello World.'); end.",False),
+("Algol","program HelloWorld; begin print 'Hello world'; end;",True),
+("Dart","void main() { print('Hello World'); }",False)
 ;
-SELECT * from carta
+SELECT * from carta where(carta.allstar = 1 ); 
