@@ -14,19 +14,19 @@ Lua	OK
 Haskell OK
 Erlang 	OK
 R	OK
-Perl
-Scala
-Rust
-Julia
-ADA
-Delphi
-Visual Basic
-Python
-Java
-Javascript
-Cobol
-Paskal
-Algol
-Dart
+Perl	OK
+Scala	OK
+Rust	OK
+Julia	OK
+ADA	OK
+Delphi	OK
+Visual Basic	OK
+Python	OK
+Java	OK
+Javascript	OK
+Cobol	OK
+Paskal	OK
+Algol	OK
+Dart OK
 
 n precisa pensar em modelo fisico. pequeno nicho7
