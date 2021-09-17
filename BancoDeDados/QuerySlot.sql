@@ -38,3 +38,4 @@ SELECT * from album;
 DELETE FROM album;
 SELECT * from album_has_slot;
 DELETE FROM album_has_slot;
+SELECT * from usuario;
