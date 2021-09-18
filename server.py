@@ -45,6 +45,7 @@ class Server():
                     con, cliente = self._tcp.accept()
                     # Executar os serviços.
                     self._service(con, cliente, cursor, connection)
+                
                 if connection.is_connected():
                     connection.close()
                     print("MySQL connection is closed")
@@ -329,9 +330,6 @@ class Server():
 
 
 
-# <>mostrar album
-
-# <>colocar carta no album -> subtrair do mochila_has_carta e faz is_ocupado ser 1
 
 # <>retirar carta do album --> incremnta do mochila_has_carta e faz is_ocupado ser 0
 

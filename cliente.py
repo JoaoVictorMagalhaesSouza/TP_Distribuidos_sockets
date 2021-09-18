@@ -43,6 +43,9 @@ class Cliente():
                         print("1) Acessar a Loja.")
                         print("2) Inserir Carta da Mochila no Álbum.")
                         print("3) Ver meu Álbum de Figurinhas.")
+                        print("4) Deletar Carta da Mochila.")
+                        print("5) Mover Carta do Álbum para a Mochila.")
+                        print("6) Leiloar/Comprar uma Carta.")
                         print("0) Sair.")
                         escolha = input("Digite sua escolha: ")
                         if (escolha=="1"): #Loja
@@ -99,6 +102,10 @@ class Cliente():
                             respostaVisualizaAlbum = respostaVisualizaAlbum.decode('ascii')
                             print(f"As cartas do seu album sao: {respostaVisualizaAlbum}")
 
+                        elif (escolha=="6"):
+                            print("Bem vindo ao leilão!")
+                            escolhaLeilao = input("Você deseja: 1 - Anunciar uma Carta | 2 - Comprar/Visualizar Cartas à Venda | 3 - Retirar uma carta anunciada: ")
+                            
                         elif (escolha=="0"):
                             break
                         
