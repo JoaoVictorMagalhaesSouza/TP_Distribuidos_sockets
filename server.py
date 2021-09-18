@@ -80,6 +80,8 @@ class Server():
                         cartas.append(int(msg[i]))
                     
                     resposta = self.__compraCartaLoja(cursor,connection,msg[1],msg[2],msg[3],cartas)
+                elif (msg[0] == "minhaMochila"):
+                    resposta = self.__minhaMochila(cursor,connection,msg[1])
                 else:
                     break
 
@@ -96,6 +98,34 @@ class Server():
     """
         Seção para criarmos as funcionalidades do servidor de cadastro, login, etc :
     """
+    def __minhaMochila(self,cursor,connection,idMochila):
+        try:
+            queryVisualizaMochila = "SELECT * FROM mochila_has_carta WHERE (Mochila_idMochila = '"+idMochila+"');"
+            print(f"Q0: {queryVisualizaMochila}")
+            cursor = connection.cursor()
+            cursor.execute(queryVisualizaMochila)
+            verificacao = cursor.fetchall()
+            cartas = []
+            nomeCartas =  []
+            for i in verificacao:
+                cartas.append(i[1])
+
+            for i in cartas:
+                query = "SELECT * FROM carta WHERE (idCarta = '"+str(i)+"');"
+                print(f"Q1: {query}")
+                cursor = connection.cursor()
+                cursor.execute(query)
+                verificacao = cursor.fetchall()
+                for j in verificacao:
+                    nomeCartas.append(j[1])
+
+
+            #print(f"Cartas que o usuario possui: {cartas}")
+
+            return(nomeCartas)
+
+        except db_error:
+            return("Erro ao visualizar dados da mochila do usuário.")
 
     def __compraCartaLoja(self,cursor,connection,coinsRemovidas,idMochila,idUser,cartas):
         

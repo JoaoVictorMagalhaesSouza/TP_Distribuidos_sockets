@@ -44,3 +44,4 @@ SELECT * from mochila_has_carta;
 DELETE FROM mochila_has_carta;
 DELETE FROM usuario WHERE (idUsuario=2);
 UPDATE usuario set coins=300 where (idUsuario=1);
+SELECT * FROM carta;

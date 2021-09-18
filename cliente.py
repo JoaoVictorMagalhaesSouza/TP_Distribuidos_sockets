@@ -41,6 +41,8 @@ class Cliente():
                         
                         print("BEM VINDO(A) AO NOSSO GAME!")
                         print("1) Acessar a Loja.")
+                        print("2) Inserir Carta da Mochila no Álbum.")
+                        print("3) Ver meu Álbum de Figurinhas.")
                         print("0) Sair.")
                         escolha = input("Digite sua escolha: ")
                         if (escolha=="1"): #Loja
@@ -74,6 +76,15 @@ class Cliente():
                             respostaLoja = self.__tcp.recv(2048)
                             respostaLoja = respostaLoja.decode('ascii')
                             print(respostaLoja)
+                        if (escolha=="2"):
+                            print("As cartas que você tem na mochila são: ")
+                            mensagem1 = "minhaMochila:"+resposta[7] #idMochila
+                            self.__tcp.send(bytes(mensagem1, 'ascii'))
+                            respostaCartasMochila = self.__tcp.recv(2048)
+                            respostaCartasMochila = respostaCartasMochila.decode('ascii')
+                            print(respostaCartasMochila)
+                            escolhaCarta = input("Digite o nome da carta que você quer inserir no álbum: ")
+                            ###Falta fazer aq agr....                  
 
                 mensagem = input("Digite a operação: ")
 
