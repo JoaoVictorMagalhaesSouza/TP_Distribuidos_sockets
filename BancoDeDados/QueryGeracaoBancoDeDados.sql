@@ -150,6 +150,7 @@ CREATE TABLE IF NOT EXISTS `BD_Distribuidos`.`Leilao` (
   `idLeilao` INT NOT NULL AUTO_INCREMENT,
   `Mochila_has_Carta_Mochila_idMochila` INT NOT NULL,
   `Mochila_has_Carta_Carta_idCarta` INT NOT NULL,
+  `precoCarta` INT NOT NULL,
   PRIMARY KEY (`idLeilao`, `Mochila_has_Carta_Mochila_idMochila`, `Mochila_has_Carta_Carta_idCarta`),
   INDEX `fk_Leilao_Mochila_has_Carta1_idx` (`Mochila_has_Carta_Mochila_idMochila` ASC, `Mochila_has_Carta_Carta_idCarta` ASC) VISIBLE,
   CONSTRAINT `fk_Leilao_Mochila_has_Carta1`

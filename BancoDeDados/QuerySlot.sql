@@ -41,7 +41,10 @@ DELETE FROM album_has_slot;
 SELECT * from usuario;
 SELECT * from usuario where (usuario.nickname = 'a');
 SELECT * from mochila_has_carta;
-DELETE FROM mochila_has_carta;
+SELECT * from leilao;
+
+#2 1 19 300
+DELETE FROM leilao WHERE (Mochila_has_Carta_Mochila_idMochila = '1');
 DELETE FROM usuario WHERE (idUsuario=2);
 UPDATE usuario set coins=300 where (idUsuario=1);
-SELECT * FROM carta;
+SELECT * FROM leilao;

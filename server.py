@@ -87,6 +87,12 @@ class Server():
                     resposta = self.__insereAlbum(cursor,connection,msg[1],msg[2],msg[3])
                 elif (msg[0] == "visualizaAlbum"):
                     resposta = self.__visualizaAlbum(cursor,connection,msg[1])
+                elif (msg[0] == "leiloaCarta"):
+                    resposta = self.__colocaCartaLeilao(cursor,connection,msg[1],msg[2],msg[3])
+                elif (msg[0] == "mostraCartasLeilao"):
+                    resposta = self.__mostraCartasLeilao(cursor,connection)
+                elif (msg[0] == "vendeLeilao"):
+                    resposta = self.__vendeLeilao(cursor,connection,msg[1],msg[2])
                 else:
                     break
 
@@ -103,6 +109,164 @@ class Server():
     """
         Seção para criarmos as funcionalidades do servidor de cadastro, login, etc :
     """
+    def __vendeLeilao(self,cursor,connection,idMochilaComprador,nicknameVendedor):
+        try:
+            """
+                Obter informações do vendedor.
+            """
+            queryIDVendedor = "SELECT * FROM usuario WHERE (nickname = '"+nicknameVendedor+"');"
+            cursor = connection.cursor()
+            cursor.execute(queryIDVendedor)
+            verificacao = cursor.fetchall()
+            for i in verificacao:
+                idVendedor = i[0] #Nickname único
+                mochilaVendedor = i[6]
+            
+            """
+                Obter informações sobre a carta a ser comprada.
+            """
+            queryInfoCarta = "SELECT * FROM leilao WHERE (Mochila_has_Carta_Mochila_idMochila = '"+str(mochilaVendedor)+"');"
+            cursor = connection.cursor()
+            cursor.execute(queryInfoCarta)
+            verificacao = cursor.fetchall()
+            for i in verificacao:
+                precoCarta = i[3]
+                idCarta = i[2]
+            
+            """
+                Removendo do leilão 
+            """
+            queryDeletaLeilao = "DELETE FROM leilao WHERE (Mochila_has_Carta_Mochila_idMochila = '"+str(mochilaVendedor)+"');"
+            result = cursor.execute(queryDeletaLeilao)
+            connection.commit()
+            """
+                Inserindo a carta na mochila do comprador e debitando as coins dele
+            """
+            queryVerificaCarta = "SELECT * FROM mochila_has_carta WHERE (Mochila_idMochila = '"+str(idMochilaComprador)+"' and Carta_idCarta = '"+str(idCarta)+"');"
+            cursor = connection.cursor()
+            cursor.execute(queryVerificaCarta)
+            verificacao = cursor.fetchall()
+            if (len(verificacao)>0): #Significa que eu tenho a carta
+                queryInsertCarta = "UPDATE mochila_has_carta SET numero = numero + 1 WHERE (Mochila_idMochila = '"""+str(idMochilaComprador)+"' and Carta_idCarta = '"+str(idCarta)+"');"
+                result = cursor.execute(queryInsertCarta)
+                connection.commit()
+            else:
+                queryInsertCarta = "INSERT INTO mochila_has_carta VALUES ('"+str(idMochilaComprador)+"','"+str(idCarta)+"',1);"
+                result = cursor.execute(queryInsertCarta)
+                connection.commit()
+
+            queryTiraCoins = "UPDATE usuario SET coins = coins - "+str(precoCarta)+" WHERE (Mochila_idMochila = '"+str(idMochilaComprador)+"');"
+            result = cursor.execute(queryTiraCoins)
+            connection.commit()
+
+            """
+                Inserindo as coins no vendedor
+            """
+            queryInsereCoins = "UPDATE usuario SET coins = coins + "+str(precoCarta)+" WHERE (Mochila_idMochila = '"+str(mochilaVendedor)+"');"
+            result = cursor.execute(queryInsereCoins)
+            connection.commit()
+            return ("Compra realizada com sucesso !")
+
+        except db_error:
+            return ("Erro na transferencia entre as cartas.")
+
+    
+    def __mostraCartasLeilao(self,cursor,connection):
+        try:
+            queryMostraCartas = "SELECT * FROM leilao;"
+            print(f"Q2: {queryMostraCartas}")
+            cursor = connection.cursor()
+            cursor.execute(queryMostraCartas)
+            verificacao = cursor.fetchall()
+            dados = {}
+            nomeCarta = []
+            nomeAnunciante = []
+            precoCarta = []
+            ids = []
+            for i in verificacao:            
+                #idMochila.append(i[1])
+                aux = i[1] #Qual o usuario ?
+                query1 = "SELECT * FROM usuario WHERE (Mochila_idMochila = '"+str(i[1])+"');"
+                cursor = connection.cursor()
+                cursor.execute(query1)
+                verificacao2 = cursor.fetchall()
+                for j in verificacao2:
+                    nomeAnunciante.append(j[2])
+                
+                query2 = "SELECT * FROM carta WHERE (idCarta = '"+str(i[2])+"');"
+                cursor = connection.cursor()
+                cursor.execute(query2)
+                verificacao3 = cursor.fetchall()
+                for j in verificacao3:
+                    nomeCarta.append(j[1])
+                           
+                
+                precoCarta.append(i[3])
+            for i in range(len(verificacao)):
+                ids.append(i)
+            dados["idVenda"] = ids
+            dados["Nome"] = nomeAnunciante 
+            dados["Carta"] = nomeCarta
+            dados["Preco"] = precoCarta
+            return(dados)
+        except db_error:
+            return("Erro ao mostrar cartas leiloadas.")
+
+    def __colocaCartaLeilao(self,cursor,connection,idMochila,carta,precoCarta):
+        try:
+            """
+                Primeiro vamos verificar se o usuario já possui cartas no leilão, pois ele só pode anunciar 1 carta por vez.
+            """
+            queryVerificaLeilao = "SELECT * FROM leilao WHERE (Mochila_has_Carta_Mochila_idMochila = '"+str(idMochila)+"');"
+            cursor = connection.cursor()
+            cursor.execute(queryVerificaLeilao)
+            verificacao = cursor.fetchall()
+            if (len(verificacao)>0): #Significa que o usuário já possui carta no leilão
+                carta = []
+                nomeCarta = ""
+                for i in verificacao:
+                    carta.append(i[2])
+                for i in carta:
+                    query = "SELECT * FROM carta WHERE (idCarta = '"+str(i)+"');"
+                    print(f"Q1: {query}")
+                    cursor = connection.cursor()
+                    cursor.execute(query)
+                    verificacao = cursor.fetchall()
+                    for j in verificacao:
+                        nomeCarta = (j[1])
+                return(f"Voce ja possui uma carta anunciada: {nomeCarta}")
+            else:
+                """
+                    Criar o leilão para aquele user.
+                """
+                """
+                    Primeiro pesquisar o id da carta a ser leiloada
+                """
+                queryIdCarta = "SELECT idCarta FROM carta WHERE (nome = '"+str(carta)+"');"
+                print(f"Q2: {queryIdCarta}")
+                cursor = connection.cursor()
+                cursor.execute(queryIdCarta)
+                verificacao = cursor.fetchall()
+                for i in verificacao:
+                    idCarta = verificacao[0]
+                novo = []
+                for x in idCarta:
+                    idCarta = str(x)
+                #print(f"{idCarta}")
+                queryCriaLeilao = "INSERT INTO leilao (Mochila_has_Carta_Mochila_idMochila,Mochila_has_Carta_Carta_idCarta,precoCarta) VALUES ('"+str(idMochila)+"','"+str(idCarta)+"','"+str(precoCarta)+"');"
+                print(f"Q3: {queryCriaLeilao}")
+                result = cursor.execute(queryCriaLeilao)
+                connection.commit()
+                """
+                    Carta inserida no leilão, remover da mochila.
+                """
+                queryRemocao = "UPDATE mochila_has_carta SET numero = numero - 1 WHERE (Mochila_idMochila = '"""+str(idMochila)+"' and Carta_idCarta = '"+str(idCarta)+"');"
+                print(f"Q4: {queryRemocao}")
+                result = cursor.execute(queryRemocao)
+                connection.commit()
+                return("Carta leiloada com sucesso. ")
+        except db_error:
+            return("Erro ao anunciar carta no leilao!")
     def __visualizaAlbum(self,cursor,connection,idAlbum):
         try:
             #Mostrar somente as cartas que ele colocou no álbum.
@@ -193,8 +357,10 @@ class Server():
 
 
             #print(f"Cartas que o usuario possui: {cartas}")
-
-            return(nomeCartas)
+            if (len(nomeCartas)==0):
+                return("0")
+            else:
+                return(nomeCartas)
 
         except db_error:
             return("Erro ao visualizar dados da mochila do usuário.")
