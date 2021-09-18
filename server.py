@@ -29,7 +29,7 @@ class Server():
                 connection = mysql.connector.connect(host='localhost',
                                                      database='bd_distribuidos',
                                                      user='root',
-                                                     password='JVictor@00')
+                                                     password='1234')
 
                 if connection.is_connected():
                     cursor = connection.cursor()
@@ -45,7 +45,7 @@ class Server():
                     con, cliente = self._tcp.accept()
                     # Executar os serviços.
                     self._service(con, cliente, cursor, connection)
-                
+
                 if connection.is_connected():
                     connection.close()
                     print("MySQL connection is closed")
@@ -66,6 +66,7 @@ class Server():
                     Mensagem de login -> login:usuario:senha
                     Mensagem de cadastro-> cadastro:coins:nickname:password:nome:email
                 """
+                print(f'Testando a mensagem: {mensagem_decodificada}')
                 msg = mensagem_decodificada.split(
                     ":")  # Nossa mensagem é da forma: acao:operadores:...
                 print(f"Mensagem: {msg}")
@@ -76,17 +77,29 @@ class Server():
                     resposta = self.__login(cursor, connection, msg[1], msg[2])
                 elif (msg[0] == "loja"):
                     cartas = []
-                    for i in range(4,len(msg)):
-                        
+                    for i in range(4, len(msg)):
+
                         cartas.append(int(msg[i]))
-                    
-                    resposta = self.__compraCartaLoja(cursor,connection,msg[1],msg[2],msg[3],cartas)
+
+                    resposta = self.__compraCartaLoja(
+                        cursor, connection, msg[1], msg[2], msg[3], cartas)
                 elif (msg[0] == "minhaMochila"):
-                    resposta = self.__minhaMochila(cursor,connection,msg[1])
+                    resposta = self.__minhaMochila(cursor, connection, msg[1])
                 elif (msg[0] == "insereAlbum"):
-                    resposta = self.__insereAlbum(cursor,connection,msg[1],msg[2],msg[3])
+                    resposta = self.__insereAlbum(
+                        cursor, connection, msg[1], msg[2], msg[3])
+                elif (msg[0] == "retiraAlbum"):
+                    # print(
+                    #     f'{msg[1].strip()}:{msg[2].strip()}:{msg[3].strip()}')
+                    resposta = self.__retiraCartaAlbum(
+                        cursor, connection, msg[1], msg[2], msg[3])
+                elif (msg[0] == 'deletaCarta'):
+                    resposta = self.__deletaCarta(
+                        cursor, connection, msg[1], msg[2])
+                # __deletaCarta
                 elif (msg[0] == "visualizaAlbum"):
-                    resposta = self.__visualizaAlbum(cursor,connection,msg[1])
+                    resposta = self.__visualizaAlbum(
+                        cursor, connection, msg[1])
                 else:
                     break
 
@@ -103,22 +116,25 @@ class Server():
     """
         Seção para criarmos as funcionalidades do servidor de cadastro, login, etc :
     """
-    def __visualizaAlbum(self,cursor,connection,idAlbum):
+
+    def __visualizaAlbum(self, cursor, connection, idAlbum):
         try:
-            #Mostrar somente as cartas que ele colocou no álbum.
-            queryVisualizaAlbum = "SELECT * FROM album_has_slot WHERE (Album_idAlbum = '"+idAlbum+"' and is_ocupado=1);"
+            # Mostrar somente as cartas que ele colocou no álbum.
+            queryVisualizaAlbum = "SELECT * FROM album_has_slot WHERE (Album_idAlbum = '" + \
+                idAlbum+"' and is_ocupado=1);"
             cursor = connection.cursor()
             cursor.execute(queryVisualizaAlbum)
             verificacao = cursor.fetchall()
             cartas = []
             nomeCartas = []
-            if (len(verificacao)==0):
+            if (len(verificacao) == 0):
                 return("Voce ainda nao possui cartas no album.")
             else:
                 for i in verificacao:
                     cartas.append(i[2])
                 for i in cartas:
-                    query = "SELECT * FROM carta WHERE (idCarta = '"+str(i)+"');"
+                    query = "SELECT * FROM carta WHERE (idCarta = '" + \
+                        str(i)+"');"
                     print(f"Q1: {query}")
                     cursor = connection.cursor()
                     cursor.execute(query)
@@ -126,59 +142,133 @@ class Server():
                     for j in verificacao:
                         nomeCartas.append(j[1])
                 return(nomeCartas)
-
-
         except db_error:
             return("Nao foi possivel exibir o album.")
-    
-    def __insereAlbum(self,cursor,connection,idMochila,idAlbum,nomeCarta):
+
+    def __insereAlbum(self, cursor, connection, idMochila, idAlbum, nomeCarta):
         try:
-            
             """
                 Primeiro tirar a carta da mochila.
             """
-            queryIdentificacao = "SELECT * FROM carta WHERE (nome = '"+nomeCarta+"');"
+            queryIdentificacao = "SELECT * FROM carta WHERE (nome = '" + \
+                nomeCarta+"');"
             cursor = connection.cursor()
             cursor.execute(queryIdentificacao)
             verificacao = cursor.fetchall()
-            
+
             for i in verificacao:
                 idCarta = i[0]
-            queryRemocao = "UPDATE mochila_has_carta SET numero = numero - 1 WHERE (Mochila_idMochila = '"""+str(idMochila)+"' and Carta_idCarta = '"+str(idCarta)+"');"
+            queryRemocao = "UPDATE mochila_has_carta SET numero = numero - 1 WHERE (Mochila_idMochila = '"""+str(
+                idMochila)+"' and Carta_idCarta = '"+str(idCarta)+"');"
             print(f"QR {queryRemocao}")
             result = cursor.execute(queryRemocao)
             connection.commit()
-            
+
             """
                 Verificar se a carta já está lá
             """
-            queryVerificaAlbum = "SELECT * FROM album_has_slot WHERE (Album_idAlbum = '"+str(idAlbum)+"' and Slot_Carta_idCarta = '"+str(idCarta)+"' and is_ocupado = 0);"
+            queryVerificaAlbum = "SELECT * FROM album_has_slot WHERE (Album_idAlbum = '"+str(
+                idAlbum)+"' and Slot_Carta_idCarta = '"+str(idCarta)+"' and is_ocupado = 0);"
             print(f"QV {queryVerificaAlbum}")
             cursor = connection.cursor()
             cursor.execute(queryVerificaAlbum)
             verificacao = cursor.fetchall()
-            
+
             print(len(verificacao))
-            if (len(verificacao)==1): #Significa que a carta ainda não está no Album
-                queryAdicionaAlbum = "UPDATE album_has_slot SET is_ocupado = 1 WHERE (Album_idAlbum = '"+str(idAlbum)+"' and Slot_Carta_idCarta = '"+str(idCarta)+"');"
+            if (len(verificacao) == 1):  # Significa que a carta ainda não está no Album
+                queryAdicionaAlbum = "UPDATE album_has_slot SET is_ocupado = 1 WHERE (Album_idAlbum = '"+str(
+                    idAlbum)+"' and Slot_Carta_idCarta = '"+str(idCarta)+"');"
                 result = cursor.execute(queryAdicionaAlbum)
                 connection.commit()
                 return("=====> Carta inserida no album com sucesso!")
-            else: #Siginifica que a carta já está no album
+            else:  # Siginifica que a carta já está no album
                 return("Carta ja esta no album.")
         except db_error:
             return("Erro ao inserir carta no album.")
-        
-    
-    def __minhaMochila(self,cursor,connection,idMochila):
+
+    def __retiraCartaAlbum(self, cursor, connection, nomeCarta, idMochila, idAlbum):
+        # <>retirar carta do album --> incremnta do mochila_has_carta e faz is_ocupado ser 0
+        # SELECT is_ocupado FROM Album_has_Slot WHERE Album_idAlbum = 1 and Slot_Carta_idCarta = x;
+        # SELECT idCarta FROM Carta WHERE nome = {nomeCarta};
+        print(f'Nome da carta é {nomeCarta}')
+        queryExisteCarta = f"SELECT idCarta FROM Carta WHERE nome = '{nomeCarta.strip()}';"
+
+        cursor = connection.cursor()
+        cursor.execute(queryExisteCarta)
+        verificacao = cursor.fetchall()
+        # return verificacao
+
+        if len(verificacao) > 0:  # a carta passada (nome) é válida
+            try:
+                idCarta = verificacao[0][0]
+                print('O id da carta é', idCarta)  # certo
+                queryExisteSlotOcupado = f"SELECT is_ocupado FROM Album_has_Slot WHERE Album_idAlbum = '{idAlbum}' and Slot_Carta_idCarta = '{idCarta}';"
+                cursor = connection.cursor()
+                cursor.execute(queryExisteSlotOcupado)
+                verificacao = cursor.fetchall()  # verificação indica se usuário tem a carta como 1
+                if (verificacao[0][0] == 1):
+                    print('Eu tenho essa carta!')
+                    queryRetiraAlbum = f"UPDATE Album_has_Slot SET is_ocupado = 0 WHERE Album_idAlbum = '{idAlbum}' and Slot_Carta_idCarta = '{idCarta}';"
+                    cursor.execute(queryRetiraAlbum)
+                    connection.commit()
+
+                    queryAdicionaMochila = f"UPDATE Mochila_has_Carta SET numero = numero + 1 WHERE Mochila_idMochila = '{idMochila}' and Carta_idCarta = '{idCarta}';"
+                    cursor.execute(queryAdicionaMochila)
+                    connection.commit()
+                    return (f"Carta {nomeCarta} de id {idCarta} retirada com sucesso!")
+                    # OBS: essa função considera que para o usuário, o Mochila_has_Carta vai
+                    # existir. Assim, o atributo "numero" é pelo menos 0.
+                else:
+                    return('Você não tem essa carta!')
+            except db_error:
+                print(db_error)
+        else:
+            return('Essa carta não existe!')
+
+    def __deletaCarta(self, cursor, connection, nomeCarta, idMochila):
+        # <>deletar carta
+        # <UPDATE mochila_has_carta SET numero = numero - 1 WHERE Mochila_idMochila = resultados[6]>
+        print(f'Nome da carta é {nomeCarta}')
+        queryExisteCarta = f"SELECT idCarta FROM Carta WHERE nome = '{nomeCarta.strip()}';"
+        cursor = connection.cursor()
+        cursor.execute(queryExisteCarta)
+        verificacao = cursor.fetchall()
+        # return verificacao
+
+        if len(verificacao) > 0:  # a carta passada (nome) é válida
+            try:
+                # verificar se ele possui um mochila_has_carta para essa carta.
+                idCarta = verificacao[0][0]
+                queryPossuiCarta = f"SELECT numero FROM Mochila_has_Carta WHERE Mochila_idMochila = '{idMochila}' and Carta_idCarta = '{idCarta}';"
+                cursor = connection.cursor()
+                cursor.execute(queryPossuiCarta)
+                verificacao = cursor.fetchall()
+                if len(verificacao) > 0:
+                    numero = verificacao[0][0]
+                    # print('O numero é', numero)
+                    if numero > 0:
+                        # signiifica que ele tem a carta.
+                        queryDecrementaNumero = f"UPDATE Mochila_has_Carta SET numero = numero - 1 WHERE Mochila_idMochila = '{idMochila}' and Carta_idCarta = '{idCarta}';"
+                        cursor.execute(queryDecrementaNumero)
+                        connection.commit()
+                        return (f"Uma carta ({nomeCarta}) de id {idCarta} deleta com sucesso!")
+                    else:
+                        return("Você não tem nenhuma carta dessas!")
+                else:
+                    return("Você não tem nenhuma carta dessas!")
+            except db_error:
+                print(db_error)
+
+    def __minhaMochila(self, cursor, connection, idMochila):
         try:
-            queryVisualizaMochila = "SELECT * FROM mochila_has_carta WHERE (Mochila_idMochila = '"+idMochila+"' and numero > 0);"
+            queryVisualizaMochila = "SELECT * FROM mochila_has_carta WHERE (Mochila_idMochila = '" + \
+                idMochila+"' and numero > 0);"
             print(f"Q0: {queryVisualizaMochila}")
             cursor = connection.cursor()
             cursor.execute(queryVisualizaMochila)
             verificacao = cursor.fetchall()
             cartas = []
-            nomeCartas =  []
+            nomeCartas = []
             for i in verificacao:
                 cartas.append(i[1])
 
@@ -191,7 +281,6 @@ class Server():
                 for j in verificacao:
                     nomeCartas.append(j[1])
 
-
             #print(f"Cartas que o usuario possui: {cartas}")
 
             return(nomeCartas)
@@ -199,34 +288,37 @@ class Server():
         except db_error:
             return("Erro ao visualizar dados da mochila do usuário.")
 
-    def __compraCartaLoja(self,cursor,connection,coinsRemovidas,idMochila,idUser,cartas):
-        
-# <>loja - -> tipo compra(5 cartas randons) --> tem que criar mochila_has_carta com o id
-    # gerado randomicamente, além disso deve retirar a quantidade de coins.
-    # <INSERT INTO mochila_has_carta VALUE(resultados[6], random, 1);>
-    # <UPDATE usuario SET coins = coins - 25 WHERE idUsuario = resultados[0];>
+    def __compraCartaLoja(self, cursor, connection, coinsRemovidas, idMochila, idUser, cartas):
+        # <>loja - -> tipo compra(5 cartas randons) --> tem que criar mochila_has_carta com o id
+        # gerado randomicamente, além disso deve retirar a quantidade de coins.
+        # <INSERT INTO mochila_has_carta VALUE(resultados[6], random, 1);>
+        # <UPDATE usuario SET coins = coins - 25 WHERE idUsuario = resultados[0];>
         try:
             print(f"Coins: {coinsRemovidas}")
             print(f"Cartas: {cartas}")
-            for i in cartas: #Avaliar cada carta a ser inserida...
-                #Primeiro temos que verificar se a carta já está na mochila
-                queryVerificaCartaMochila = """SELECT * FROM mochila_has_carta WHERE (Mochila_idMochila = '"""+str(idMochila)+"' and Carta_idCarta = '"+str(i)+"');"
+            for i in cartas:  # Avaliar cada carta a ser inserida...
+                # Primeiro temos que verificar se a carta já está na mochila
+                queryVerificaCartaMochila = """SELECT * FROM mochila_has_carta WHERE (Mochila_idMochila = '"""+str(
+                    idMochila)+"' and Carta_idCarta = '"+str(i)+"');"
                 print(f"Q1: {queryVerificaCartaMochila}")
                 cursor = connection.cursor()
                 cursor.execute(queryVerificaCartaMochila)
                 verificacao = cursor.fetchall()
-               
-                if (len(verificacao) > 0): #Carta já está na mochila
-                    queryInsereMochila = "UPDATE mochila_has_carta SET numero = numero + 1 WHERE (Mochila_idMochila = '"""+str(idMochila)+"' and Carta_idCarta = '"+str(i)+"');"
+
+                if (len(verificacao) > 0):  # Carta já está na mochila
+                    queryInsereMochila = "UPDATE mochila_has_carta SET numero = numero + 1 WHERE (Mochila_idMochila = '"""+str(
+                        idMochila)+"' and Carta_idCarta = '"+str(i)+"');"
                 else:
-                    queryInsereMochila = """INSERT INTO mochila_has_carta VALUES("""+"'"+str(idMochila)+"','"+str(i)+"','1');"
+                    queryInsereMochila = """INSERT INTO mochila_has_carta VALUES("""+"'"+str(
+                        idMochila)+"','"+str(i)+"','1');"
                 print(f"Q2: {queryInsereMochila}")
                 result = cursor.execute(queryInsereMochila)
                 connection.commit()
             """
                 Remover as coins
             """
-            queryRemoveCoins = "UPDATE usuario SET coins = coins -"+coinsRemovidas+" WHERE (idUsuario = '"+idUser+"'); "
+            queryRemoveCoins = "UPDATE usuario SET coins = coins -" + \
+                coinsRemovidas+" WHERE (idUsuario = '"+idUser+"'); "
             print(f"Q3: {queryRemoveCoins}")
             result = cursor.execute(queryRemoveCoins)
             connection.commit()
@@ -328,13 +420,6 @@ class Server():
         except db_error:
             return("=====> Erro ao realizar o login !")
 
-
-
-
-# <>retirar carta do album --> incremnta do mochila_has_carta e faz is_ocupado ser 0
-
-# <>deletar carta
-# <UPDATE mochila_has_carta SET numero = numero - 1 WHERE Mochila_idMochila = resultados[6]>
 
 # <>sistema de recompensa de coins.
 

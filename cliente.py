@@ -33,12 +33,12 @@ class Cliente():
                     for y in ['\n', '\t', '/', '.', '-', '(', ')', "'"]:
                         item = item.replace(y, "")
                     novo.append(item)
-                resposta=novo
+                resposta = novo
                 print(f"= Resposta: {novo}")
                 #('login', 1, 300, 'a', 'b', 'c', 'd', 1, 1)
-                if (resposta[0] == 'login'): #Se o login for bem sucedido.
+                if (resposta[0] == 'login'):  # Se o login for bem sucedido.
                     while True:
-                        
+
                         print("BEM VINDO(A) AO NOSSO GAME!")
                         print("1) Acessar a Loja.")
                         print("2) Inserir Carta da Mochila no Álbum.")
@@ -48,79 +48,121 @@ class Cliente():
                         print("6) Leiloar/Comprar uma Carta.")
                         print("0) Sair.")
                         escolha = input("Digite sua escolha: ")
-                        if (escolha=="1"): #Loja
+                        if (escolha == "1"):  # Loja
                             print("Pacotinhos disponíveis:")
                             print("1) 1 carta aleatória = $50 coins.")
                             print("2) 3 cartas aleatórias = $135 coins.")
                             print("3) 5 cartas aleatórias = $225 coins.")
-                            
-                            pacotinho = input(f"Você tem {resposta[2]} coins. Escolha qual pacotinho quer comprar: ")
+
+                            pacotinho = input(
+                                f"Você tem {resposta[2]} coins. Escolha qual pacotinho quer comprar: ")
                             if (int(resposta[2]) < 50):
-                                print("Voce nao tem moedas suficentes! Faca uma recarga agora!")
+                                print(
+                                    "Voce nao tem moedas suficentes! Faca uma recarga agora!")
                                 continue
-                            elif (pacotinho=="1") and (int(resposta[2])>=50):
+                            elif (pacotinho == "1") and (int(resposta[2]) >= 50):
                                 cartaPacote = []
-                                cartaPacote.append(random.randint(1,31)) # Gerar uma carta de 1 a 30.
-                                mensagem="loja:50:"+resposta[1]+":"+resposta[7]+":"+str(cartaPacote[0]) # Padronização da mensagem
+                                # Gerar uma carta de 1 a 30.
+                                cartaPacote.append(random.randint(1, 31))
+                                # Padronização da mensagem
+                                mensagem = "loja:50:" + \
+                                    resposta[1]+":"+resposta[7] + \
+                                    ":"+str(cartaPacote[0])
                                 resposta[2] = str(int(resposta[2])-50)
-                            elif (pacotinho=="2") and (int(resposta[2])>=135):
+                            elif (pacotinho == "2") and (int(resposta[2]) >= 135):
                                 cartaPacote = []
                                 for i in range(3):
-                                    cartaPacote.append(random.randint(1,31))
-                                mensagem="loja:135:"+resposta[1]+":"+resposta[7]+":"+str(cartaPacote[0])+":"+str(cartaPacote[1])+":"+str(cartaPacote[2])
+                                    cartaPacote.append(random.randint(1, 31))
+                                mensagem = "loja:135:"+resposta[1]+":"+resposta[7]+":"+str(
+                                    cartaPacote[0])+":"+str(cartaPacote[1])+":"+str(cartaPacote[2])
                                 resposta[2] = str(int(resposta[2])-135)
-                            elif (pacotinho=="3") and (int(resposta[2])>=225):
+                            elif (pacotinho == "3") and (int(resposta[2]) >= 225):
                                 cartaPacote = []
                                 for i in range(5):
-                                    cartaPacote.append(random.randint(1,31))
-                                mensagem="loja:225:"+resposta[1]+":"+resposta[7]+":"+str(cartaPacote[0])+":"+str(cartaPacote[1])+":"+str(cartaPacote[2])+":"+str(cartaPacote[3])+":"+str(cartaPacote[4])
+                                    cartaPacote.append(random.randint(1, 31))
+                                mensagem = "loja:225:"+resposta[1]+":"+resposta[7]+":"+str(cartaPacote[0])+":"+str(
+                                    cartaPacote[1])+":"+str(cartaPacote[2])+":"+str(cartaPacote[3])+":"+str(cartaPacote[4])
                                 resposta[2] = str(int(resposta[2])-225)
                             self.__tcp.send(bytes(mensagem, 'ascii'))
                             respostaLoja = self.__tcp.recv(2048)
                             respostaLoja = respostaLoja.decode('ascii')
                             print(respostaLoja)
-                        elif (escolha=="2"):
+                        elif (escolha == "2"):
                             print("As cartas que você tem na mochila são: ")
-                            mensagem1 = "minhaMochila:"+resposta[7] #idMochila
+                            mensagem1 = "minhaMochila:" + \
+                                resposta[7]  # idMochila
                             self.__tcp.send(bytes(mensagem1, 'ascii'))
                             respostaCartasMochila = self.__tcp.recv(2048)
-                            respostaCartasMochila = respostaCartasMochila.decode('ascii')
+                            respostaCartasMochila = respostaCartasMochila.decode(
+                                'ascii')
                             print(respostaCartasMochila)
                             """
                                 Tratar aqui depois: deixar o cara digitar apenas uma das cartas mostradas.
                             """
-                            escolhaCarta = input("Digite o nome da carta que você quer inserir no álbum: ")
-                            mensagem2 = "insereAlbum:"+resposta[7]+":"+resposta[8]+":"+escolhaCarta #idMochila:idAlbum:Python
-                            self.__tcp.send(bytes(mensagem2, 'ascii'))   
+                            escolhaCarta = input(
+                                "Digite o nome da carta que você quer inserir no álbum: ")
+                            # idMochila:idAlbum:Python
+                            mensagem2 = "insereAlbum:" + \
+                                resposta[7]+":"+resposta[8]+":"+escolhaCarta
+                            self.__tcp.send(bytes(mensagem2, 'ascii'))
                             respostaInsereAlbum = self.__tcp.recv(2048)
-                            respostaInsereAlbum = respostaInsereAlbum.decode('ascii')
+                            respostaInsereAlbum = respostaInsereAlbum.decode(
+                                'ascii')
                             print(respostaInsereAlbum)
-                        elif (escolha=="3"):
+                        elif (escolha == "3"):
                             mensagem3 = "visualizaAlbum:"+resposta[8]
-                            self.__tcp.send(bytes(mensagem3, 'ascii'))   
+                            self.__tcp.send(bytes(mensagem3, 'ascii'))
                             respostaVisualizaAlbum = self.__tcp.recv(2048)
-                            respostaVisualizaAlbum = respostaVisualizaAlbum.decode('ascii')
-                            print(f"As cartas do seu album sao: {respostaVisualizaAlbum}")
+                            respostaVisualizaAlbum = respostaVisualizaAlbum.decode(
+                                'ascii')
+                            print(
+                                f"As cartas do seu album sao: {respostaVisualizaAlbum}")
 
-                        elif (escolha=="6"):
+                        elif (escolha == '4'):
+                            carta = input(
+                                'Digite o nome da carta: ')
+                            print('A carta escolhida é:', carta)
+                            self.__tcp.send(
+                                bytes('deletaCarta:' + carta + ':' + resposta[7], 'ascii'))
+
+                            respostaRetirarCarta = self.__tcp.recv(2048)
+                            respostaRetirarCarta = respostaRetirarCarta.decode(
+                                'ascii')
+                            print(respostaRetirarCarta)
+                        elif (escolha == "5"):
+                            carta = input(
+                                'Digite o nome da carta: ')
+                            print('A carta escolhida é:', carta)
+                            self.__tcp.send(
+                                bytes('retiraAlbum:' + carta + ':' + resposta[7] + ':' + resposta[8], 'ascii'))
+
+                            respostaRetirarCarta = self.__tcp.recv(2048)
+                            respostaRetirarCarta = respostaRetirarCarta.decode(
+                                'ascii')
+                            print(respostaRetirarCarta)
+
+                        elif (escolha == "6"):
                             print("Bem vindo ao leilão!")
-                            escolhaLeilao = input("Você deseja: 1 - Anunciar uma Carta | 2 - Comprar/Visualizar Cartas à Venda | 3 - Retirar uma carta anunciada: ")
-                            #Ver se já possui uma carta anunciada.
+                            escolhaLeilao = input(
+                                "Você deseja: 1 - Anunciar uma Carta | 2 - Comprar/Visualizar Cartas à Venda | 3 - Retirar uma carta anunciada: ")
+                            # Ver se já possui uma carta anunciada.
                             if (escolhaLeilao == "1"):
                                 print(f"As cartas que você pode anunciar são: ")
-                                mensagem1 = "minhaMochila:"+resposta[7] #idMochila
+                                mensagem1 = "minhaMochila:" + \
+                                    resposta[7]  # idMochila
                                 self.__tcp.send(bytes(mensagem1, 'ascii'))
                                 respostaCartasMochila = self.__tcp.recv(2048)
-                                respostaCartasMochila = respostaCartasMochila.decode('ascii')
+                                respostaCartasMochila = respostaCartasMochila.decode(
+                                    'ascii')
                                 print(respostaCartasMochila)
-                                cartaAnunciada = input("Digite o nome da carta a ser anunciada: ")
-                                precoCarta = input("Especifique por quanto deseja leiloar essa carta: ")
+                                cartaAnunciada = input(
+                                    "Digite o nome da carta a ser anunciada: ")
+                                precoCarta = input(
+                                    "Especifique por quanto deseja leiloar essa carta: ")
                                 mensagemAnuncio = "leiloaCarta:"+cartaAnunciada+":"+precoCarta
 
-                        elif (escolha=="0"):
+                        elif (escolha == "0"):
                             break
-                        
-
 
                 mensagem = input("Digite a operação: ")
 
