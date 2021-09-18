@@ -83,8 +83,15 @@ class Cliente():
                             respostaCartasMochila = self.__tcp.recv(2048)
                             respostaCartasMochila = respostaCartasMochila.decode('ascii')
                             print(respostaCartasMochila)
+                            """
+                                Tratar aqui depois: deixar o cara digitar apenas uma das cartas mostradas.
+                            """
                             escolhaCarta = input("Digite o nome da carta que você quer inserir no álbum: ")
-                            ###Falta fazer aq agr....                  
+                            mensagem2 = "insereAlbum:"+resposta[7]+":"+resposta[8]+":"+escolhaCarta #idMochila:idAlbum:Python
+                            self.__tcp.send(bytes(mensagem2, 'ascii'))   
+                            respostaInsereAlbum = self.__tcp.recv(2048)
+                            respostaInsereAlbum = respostaInsereAlbum.decode('ascii')
+                            print(respostaInsereAlbum)          
 
                 mensagem = input("Digite a operação: ")
 

@@ -82,6 +82,8 @@ class Server():
                     resposta = self.__compraCartaLoja(cursor,connection,msg[1],msg[2],msg[3],cartas)
                 elif (msg[0] == "minhaMochila"):
                     resposta = self.__minhaMochila(cursor,connection,msg[1])
+                elif (msg[0] == "insereAlbum"):
+                    resposta = self.__insereAlbum(cursor,connection,msg[1],msg[2],msg[3])
                 else:
                     break
 
@@ -98,9 +100,48 @@ class Server():
     """
         Seção para criarmos as funcionalidades do servidor de cadastro, login, etc :
     """
+    def __insereAlbum(self,cursor,connection,idMochila,idAlbum,nomeCarta):
+        try:
+            print("AQUI #")
+            """
+                Primeiro tirar a carta da mochila.
+            """
+            queryIdentificacao = "SELECT * FROM carta WHERE (nome = '"+nomeCarta+"');"
+            cursor = connection.cursor()
+            cursor.execute(queryIdentificacao)
+            verificacao = cursor.fetchall()
+            print("AQUI #")
+            for i in verificacao:
+                idCarta = i[0]
+            queryRemocao = "UPDATE mochila_has_carta SET numero = numero - 1 WHERE (Mochila_idMochila = '"""+str(idMochila)+"' and Carta_idCarta = '"+str(idCarta)+"');"
+            print(f"QR {queryRemocao}")
+            result = cursor.execute(queryRemocao)
+            connection.commit()
+            
+            """
+                Verificar se a carta já está lá
+            """
+            queryVerificaAlbum = "SELECT * FROM album_has_slot WHERE (Album_idAlbum = '"+str(idAlbum)+"' and Slot_Carta_idCarta = '"+str(idCarta)+"' and is_ocupado = 0);"
+            print(f"QV {queryVerificaAlbum}")
+            cursor = connection.cursor()
+            cursor.execute(queryVerificaAlbum)
+            verificacao = cursor.fetchall()
+            
+            print(len(verificacao))
+            if (len(verificacao)==1): #Significa que a carta ainda não está no Album
+                queryAdicionaAlbum = "UPDATE album_has_slot SET is_ocupado = 1 WHERE (Album_idAlbum = '"+str(idAlbum)+"' and Slot_Carta_idCarta = '"+str(idCarta)+"');"
+                result = cursor.execute(queryAdicionaAlbum)
+                connection.commit()
+                return("=====> Carta inserida no album com sucesso!")
+            else: #Siginifica que a carta já está no album
+                return("Carta ja esta no album.")
+        except db_error:
+            return("Erro ao inserir carta no album.")
+        
+    
     def __minhaMochila(self,cursor,connection,idMochila):
         try:
-            queryVisualizaMochila = "SELECT * FROM mochila_has_carta WHERE (Mochila_idMochila = '"+idMochila+"');"
+            queryVisualizaMochila = "SELECT * FROM mochila_has_carta WHERE (Mochila_idMochila = '"+idMochila+"' and numero > 0);"
             print(f"Q0: {queryVisualizaMochila}")
             cursor = connection.cursor()
             cursor.execute(queryVisualizaMochila)
