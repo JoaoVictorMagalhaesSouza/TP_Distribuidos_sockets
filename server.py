@@ -84,6 +84,8 @@ class Server():
                     resposta = self.__minhaMochila(cursor,connection,msg[1])
                 elif (msg[0] == "insereAlbum"):
                     resposta = self.__insereAlbum(cursor,connection,msg[1],msg[2],msg[3])
+                elif (msg[0] == "visualizaAlbum"):
+                    resposta = self.__visualizaAlbum(cursor,connection,msg[1])
                 else:
                     break
 
@@ -100,9 +102,37 @@ class Server():
     """
         Seção para criarmos as funcionalidades do servidor de cadastro, login, etc :
     """
+    def __visualizaAlbum(self,cursor,connection,idAlbum):
+        try:
+            #Mostrar somente as cartas que ele colocou no álbum.
+            queryVisualizaAlbum = "SELECT * FROM album_has_slot WHERE (Album_idAlbum = '"+idAlbum+"' and is_ocupado=1);"
+            cursor = connection.cursor()
+            cursor.execute(queryVisualizaAlbum)
+            verificacao = cursor.fetchall()
+            cartas = []
+            nomeCartas = []
+            if (len(verificacao)==0):
+                return("Voce ainda nao possui cartas no album.")
+            else:
+                for i in verificacao:
+                    cartas.append(i[2])
+                for i in cartas:
+                    query = "SELECT * FROM carta WHERE (idCarta = '"+str(i)+"');"
+                    print(f"Q1: {query}")
+                    cursor = connection.cursor()
+                    cursor.execute(query)
+                    verificacao = cursor.fetchall()
+                    for j in verificacao:
+                        nomeCartas.append(j[1])
+                return(nomeCartas)
+
+
+        except db_error:
+            return("Nao foi possivel exibir o album.")
+    
     def __insereAlbum(self,cursor,connection,idMochila,idAlbum,nomeCarta):
         try:
-            print("AQUI #")
+            
             """
                 Primeiro tirar a carta da mochila.
             """
@@ -110,7 +140,7 @@ class Server():
             cursor = connection.cursor()
             cursor.execute(queryIdentificacao)
             verificacao = cursor.fetchall()
-            print("AQUI #")
+            
             for i in verificacao:
                 idCarta = i[0]
             queryRemocao = "UPDATE mochila_has_carta SET numero = numero - 1 WHERE (Mochila_idMochila = '"""+str(idMochila)+"' and Carta_idCarta = '"+str(idCarta)+"');"

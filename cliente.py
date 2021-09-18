@@ -91,7 +91,14 @@ class Cliente():
                             self.__tcp.send(bytes(mensagem2, 'ascii'))   
                             respostaInsereAlbum = self.__tcp.recv(2048)
                             respostaInsereAlbum = respostaInsereAlbum.decode('ascii')
-                            print(respostaInsereAlbum)          
+                            print(respostaInsereAlbum)
+                        if (escolha=="3"):
+                            mensagem3 = "visualizaAlbum:"+resposta[8]
+                            self.__tcp.send(bytes(mensagem3, 'ascii'))   
+                            respostaVisualizaAlbum = self.__tcp.recv(2048)
+                            respostaVisualizaAlbum = respostaVisualizaAlbum.decode('ascii')
+                            print(f"As cartas do seu album sao: {respostaVisualizaAlbum}")
+
 
                 mensagem = input("Digite a operação: ")
 
