@@ -105,7 +105,18 @@ class Cliente():
                         elif (escolha=="6"):
                             print("Bem vindo ao leilão!")
                             escolhaLeilao = input("Você deseja: 1 - Anunciar uma Carta | 2 - Comprar/Visualizar Cartas à Venda | 3 - Retirar uma carta anunciada: ")
-                            
+                            #Ver se já possui uma carta anunciada.
+                            if (escolhaLeilao == "1"):
+                                print(f"As cartas que você pode anunciar são: ")
+                                mensagem1 = "minhaMochila:"+resposta[7] #idMochila
+                                self.__tcp.send(bytes(mensagem1, 'ascii'))
+                                respostaCartasMochila = self.__tcp.recv(2048)
+                                respostaCartasMochila = respostaCartasMochila.decode('ascii')
+                                print(respostaCartasMochila)
+                                cartaAnunciada = input("Digite o nome da carta a ser anunciada: ")
+                                precoCarta = input("Especifique por quanto deseja leiloar essa carta: ")
+                                mensagemAnuncio = "leiloaCarta:"+cartaAnunciada+":"+precoCarta
+
                         elif (escolha=="0"):
                             break
                         
