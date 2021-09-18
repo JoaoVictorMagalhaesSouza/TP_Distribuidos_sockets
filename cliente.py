@@ -76,7 +76,7 @@ class Cliente():
                             respostaLoja = self.__tcp.recv(2048)
                             respostaLoja = respostaLoja.decode('ascii')
                             print(respostaLoja)
-                        if (escolha=="2"):
+                        elif (escolha=="2"):
                             print("As cartas que você tem na mochila são: ")
                             mensagem1 = "minhaMochila:"+resposta[7] #idMochila
                             self.__tcp.send(bytes(mensagem1, 'ascii'))
@@ -92,12 +92,16 @@ class Cliente():
                             respostaInsereAlbum = self.__tcp.recv(2048)
                             respostaInsereAlbum = respostaInsereAlbum.decode('ascii')
                             print(respostaInsereAlbum)
-                        if (escolha=="3"):
+                        elif (escolha=="3"):
                             mensagem3 = "visualizaAlbum:"+resposta[8]
                             self.__tcp.send(bytes(mensagem3, 'ascii'))   
                             respostaVisualizaAlbum = self.__tcp.recv(2048)
                             respostaVisualizaAlbum = respostaVisualizaAlbum.decode('ascii')
                             print(f"As cartas do seu album sao: {respostaVisualizaAlbum}")
+
+                        elif (escolha=="0"):
+                            break
+                        
 
 
                 mensagem = input("Digite a operação: ")
