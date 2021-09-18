@@ -40,3 +40,7 @@ SELECT * from album_has_slot;
 DELETE FROM album_has_slot;
 SELECT * from usuario;
 SELECT * from usuario where (usuario.nickname = 'a');
+SELECT * from mochila_has_carta;
+DELETE FROM mochila_has_carta;
+DELETE FROM usuario WHERE (idUsuario=2);
+UPDATE usuario set coins=300 where (idUsuario=1);

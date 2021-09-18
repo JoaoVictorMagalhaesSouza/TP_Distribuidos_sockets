@@ -29,7 +29,7 @@ class Server():
                 connection = mysql.connector.connect(host='localhost',
                                                      database='bd_distribuidos',
                                                      user='root',
-                                                     password='1234')
+                                                     password='JVictor@00')
 
                 if connection.is_connected():
                     cursor = connection.cursor()
@@ -73,6 +73,13 @@ class Server():
                         cursor, connection, msg[1], msg[2], msg[3], msg[4], msg[5])
                 elif (msg[0] == "login"):
                     resposta = self.__login(cursor, connection, msg[1], msg[2])
+                elif (msg[0] == "loja"):
+                    cartas = []
+                    for i in range(4,len(msg)):
+                        
+                        cartas.append(int(msg[i]))
+                    
+                    resposta = self.__compraCartaLoja(cursor,connection,msg[1],msg[2],msg[3],cartas)
                 else:
                     break
 
@@ -89,6 +96,42 @@ class Server():
     """
         Seção para criarmos as funcionalidades do servidor de cadastro, login, etc :
     """
+
+    def __compraCartaLoja(self,cursor,connection,coinsRemovidas,idMochila,idUser,cartas):
+        
+# <>loja - -> tipo compra(5 cartas randons) --> tem que criar mochila_has_carta com o id
+    # gerado randomicamente, além disso deve retirar a quantidade de coins.
+    # <INSERT INTO mochila_has_carta VALUE(resultados[6], random, 1);>
+    # <UPDATE usuario SET coins = coins - 25 WHERE idUsuario = resultados[0];>
+        try:
+            print(f"Coins: {coinsRemovidas}")
+            print(f"Cartas: {cartas}")
+            for i in cartas: #Avaliar cada carta a ser inserida...
+                #Primeiro temos que verificar se a carta já está na mochila
+                queryVerificaCartaMochila = """SELECT * FROM mochila_has_carta WHERE (Mochila_idMochila = '"""+str(idMochila)+"' and Carta_idCarta = '"+str(i)+"');"
+                print(f"Q1: {queryVerificaCartaMochila}")
+                cursor = connection.cursor()
+                cursor.execute(queryVerificaCartaMochila)
+                verificacao = cursor.fetchall()
+               
+                if (len(verificacao) > 0): #Carta já está na mochila
+                    queryInsereMochila = "UPDATE mochila_has_carta SET numero = numero + 1 WHERE (Mochila_idMochila = '"""+str(idMochila)+"' and Carta_idCarta = '"+str(i)+"');"
+                else:
+                    queryInsereMochila = """INSERT INTO mochila_has_carta VALUES("""+"'"+str(idMochila)+"','"+str(i)+"','1');"
+                print(f"Q2: {queryInsereMochila}")
+                result = cursor.execute(queryInsereMochila)
+                connection.commit()
+            """
+                Remover as coins
+            """
+            queryRemoveCoins = "UPDATE usuario SET coins = coins -"+coinsRemovidas+" WHERE (idUsuario = '"+idUser+"'); "
+            print(f"Q3: {queryRemoveCoins}")
+            result = cursor.execute(queryRemoveCoins)
+            connection.commit()
+            return("====> Cartas compradas com sucesso !")
+
+        except db_error:
+            return("Erro ao comprar carta!")
 
     def __cadastro(self, cursor, connection, coins, nickname, password, nome, email):
         try:
@@ -184,10 +227,6 @@ class Server():
             return("=====> Erro ao realizar o login !")
 
 
-# <>loja - -> tipo compra(5 cartas randons) --> tem que criar mochila_has_carta com o id
-    # gerado randomicamente, além disso deve retirar a quantidade de coins.
-    # <INSERT INTO mochila_has_carta VALUE(resultados[6], random, 1);>
-    # <UPDATE usuario SET coins = coins - 25 WHERE idUsuario = resultados[0];>
 
 # <>mostrar album
 

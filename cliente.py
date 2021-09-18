@@ -1,4 +1,5 @@
 import socket
+import random
 
 
 class Cliente():
@@ -24,11 +25,56 @@ class Cliente():
             while mensagem != "x":
                 self.__tcp.send(bytes(mensagem, 'ascii'))
                 resposta = self.__tcp.recv(2048)
-                print(f"= {resposta.decode('ascii')}")
-                if (resposta[0] == 'login'):
-                    # while True:
-                    #     pass
-                    #     break
+                resposta = resposta.decode('ascii')
+                resposta = resposta.split(",")
+                novo = []
+                for x in resposta:
+                    item = x
+                    for y in ['\n', '\t', '/', '.', '-', '(', ')', "'"]:
+                        item = item.replace(y, "")
+                    novo.append(item)
+                resposta=novo
+                print(f"= Resposta: {novo}")
+                #('login', 1, 300, 'a', 'b', 'c', 'd', 1, 1)
+                if (resposta[0] == 'login'): #Se o login for bem sucedido.
+                    while True:
+                        
+                        print("BEM VINDO(A) AO NOSSO GAME!")
+                        print("1) Acessar a Loja.")
+                        print("0) Sair.")
+                        escolha = input("Digite sua escolha: ")
+                        if (escolha=="1"): #Loja
+                            print("Pacotinhos disponíveis:")
+                            print("1) 1 carta aleatória = $50 coins.")
+                            print("2) 3 cartas aleatórias = $135 coins.")
+                            print("3) 5 cartas aleatórias = $225 coins.")
+                            
+                            pacotinho = input(f"Você tem {resposta[2]} coins. Escolha qual pacotinho quer comprar: ")
+                            if (int(resposta[2]) < 50):
+                                print("Voce nao tem moedas suficentes! Faca uma recarga agora!")
+                                continue
+                            elif (pacotinho=="1") and (int(resposta[2])>=50):
+                                cartaPacote = []
+                                cartaPacote.append(random.randint(1,31)) # Gerar uma carta de 1 a 30.
+                                mensagem="loja:50:"+resposta[1]+":"+resposta[7]+":"+str(cartaPacote[0]) # Padronização da mensagem
+                                resposta[2] = str(int(resposta[2])-50)
+                            elif (pacotinho=="2") and (int(resposta[2])>=135):
+                                cartaPacote = []
+                                for i in range(3):
+                                    cartaPacote.append(random.randint(1,31))
+                                mensagem="loja:135:"+resposta[1]+":"+resposta[7]+":"+str(cartaPacote[0])+":"+str(cartaPacote[1])+":"+str(cartaPacote[2])
+                                resposta[2] = str(int(resposta[2])-135)
+                            elif (pacotinho=="3") and (int(resposta[2])>=225):
+                                cartaPacote = []
+                                for i in range(5):
+                                    cartaPacote.append(random.randint(1,31))
+                                mensagem="loja:225:"+resposta[1]+":"+resposta[7]+":"+str(cartaPacote[0])+":"+str(cartaPacote[1])+":"+str(cartaPacote[2])+":"+str(cartaPacote[3])+":"+str(cartaPacote[4])
+                                resposta[2] = str(int(resposta[2])-225)
+                            self.__tcp.send(bytes(mensagem, 'ascii'))
+                            respostaLoja = self.__tcp.recv(2048)
+                            respostaLoja = respostaLoja.decode('ascii')
+                            print(respostaLoja)
+
                 mensagem = input("Digite a operação: ")
 
             self.__tcp.close()
