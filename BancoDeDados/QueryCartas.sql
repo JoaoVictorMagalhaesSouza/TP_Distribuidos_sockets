@@ -30,4 +30,7 @@ INSERT INTO carta (nome,descricao,allstar) values
 ("Algol","program HelloWorld; begin print 'Hello world'; end;",True),
 ("Dart","void main() { print('Hello World'); }",False)
 ;
-SELECT * from carta ;
+select * from carta;
+SELECT * from mochila_has_carta ;
+SELECT * FROM leilao;
+SELECT * from usuario;	

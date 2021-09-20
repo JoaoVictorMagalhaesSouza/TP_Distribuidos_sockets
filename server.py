@@ -102,6 +102,8 @@ class Server():
                     resposta = self.__deletaCarta(
                         cursor, connection, msg[1], msg[2])
                 # __deletaCarta
+                elif (msg[0] == "retiraCartaLeilao"):
+                    resposta = self.__retiraCartaLeilao(cursor,connection,msg[1])
                 else:
                     break
 
@@ -118,6 +120,31 @@ class Server():
     """
         Seção para criarmos as funcionalidades do servidor de cadastro, login, etc :
     """
+    def __retiraCartaLeilao(self,cursor,connection,idMochila):
+        try:
+            queryBusca = f"SELECT * FROM leilao WHERE ( Mochila_has_Carta_Mochila_idMochila = '{idMochila}');"
+            
+            
+            cursor = connection.cursor()
+            cursor.execute(queryBusca)
+            verificacao = cursor.fetchall()
+            for i in verificacao:
+                idCarta = i[2]
+
+            if (len(verificacao)>0): #Usuario possui carta no leilao
+                queryTiraLeilao = f"DELETE FROM leilao WHERE ( Mochila_has_Carta_Mochila_idMochila = '{idMochila}');"
+                result = cursor.execute(queryTiraLeilao)
+                connection.commit()
+                queryInsereIV = f"UPDATE mochila_has_carta SET numero = numero + 1 WHERE (Mochila_idMochila = '{idMochila}' and Carta_idCarta = '{idCarta}');"
+                result = cursor.execute(queryInsereIV)
+                connection.commit()
+                return("=====> Carta removida do leilao com sucesso !")
+            else:
+                return("=====> [ERRO] Voce nao possui carta para retirar !")
+
+        except db_error:
+            return ("=====> [ERRO NO BANCO] Erro ao carregar carta leiloada.")
+
     def __retiraCartaAlbum(self, cursor, connection, nomeCarta, idMochila, idAlbum):
         # <>retirar carta do album --> incremnta do mochila_has_carta e faz is_ocupado ser 0
         # SELECT is_ocupado FROM Album_has_Slot WHERE Album_idAlbum = 1 and Slot_Carta_idCarta = x;
@@ -551,7 +578,7 @@ class Server():
         """
             Formato padrão da query de seleção
         """
-        query = """SELECT * FROM usuario WHERE (nickname='""" + \
+        query = """SELECT * FROM usuario WHERE (BINARY nickname= '""" + \
             nickname+"'"+" and password='"+senha+"');"
         # print(f"{query}")
         """

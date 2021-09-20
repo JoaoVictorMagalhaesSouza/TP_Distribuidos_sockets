@@ -31,13 +31,12 @@ class Cliente():
                 nick = input("Digite seu nickname: ")
                 senha = input("Digite sua senha: ")
                 nome = input("Digite seu nome: ")
-                email = input("Digite seu email")
+                email = input("Digite seu email: ")
                 mensagem = "cadastro:0:"+nick+":"+senha+":"+nome+":"+email
             else:
                 nick = input("Digite seu nickname: ")
                 senha = input("Digite sua senha: ")
                 mensagem = "login:"+nick+":"+senha
-            
             while mensagem != "x":
                 self.__tcp.send(bytes(mensagem, 'ascii'))
                 resposta = self.__tcp.recv(2048)
@@ -51,20 +50,25 @@ class Cliente():
                     novo.append(item)
                 resposta=novo
                 if(resposta[0]!='login'):
-                    print(f"= Resposta: {resposta}")
+                    print(f"{resposta}")
+                    print("")
+                    print("")
                 #('login', 1, 300, 'a', 'b', 'c', 'd', 1, 1)
                 if (resposta[0] == 'login'): #Se o login for bem sucedido.
                     print("=====> Login realizado com sucesso !")
+                    print("")
+                    print("")
+            
                     while True:
                         
                         print("BEM VINDO(A) AO NOSSO GAME!")
                         print("1) Acessar a Loja.")
                         print("2) Inserir Carta da Mochila no Álbum.")
-                        print("3) Ver meu Álbum de Figurinhas.")
-                        print("4) Deletar Carta da Mochila.")
-                        print("5) Mover Carta do Álbum para a Mochila.")
-                        print("6) Leiloar/Comprar uma Carta.")
-                        print("7) Visualizar Cartas na Mochila.")
+                        print("3) Visualizar meu Álbum de Figurinhas.")
+                        print("4) Visualizar Cartas na Mochila.")
+                        print("5) Deletar Carta da Mochila.")
+                        print("6) Mover Carta do Álbum para a Mochila.")
+                        print("7) Leiloar/Comprar/Remover uma Carta.")
                         print("0) Logoff.")
                         escolha = input("Digite sua escolha: ")
                         print("")
@@ -131,7 +135,7 @@ class Cliente():
                                 """
                                     Tratar aqui depois: deixar o cara digitar apenas uma das cartas mostradas.
                                 """
-                                print(f"{myCards}    {type(myCards)}")
+                                #print(f"{myCards}    {type(myCards)}")
                                 escolhaCarta = input("Digite o nome da carta que você quer inserir no álbum: ")
                                 if (escolhaCarta in myCards):
                                     mensagem2 = "insereAlbum:"+resposta[7]+":"+resposta[8]+":"+escolhaCarta #idMochila:idAlbum:Python
@@ -162,89 +166,6 @@ class Cliente():
 
                             
                         elif (escolha=="4"):
-                            carta = input(
-                                'Digite o nome da carta: ')
-                            print('A carta escolhida é:', carta)
-                            self.__tcp.send(
-                                bytes('deletaCarta:' + carta + ':' + resposta[7], 'ascii'))
-
-                            respostaRetirarCarta = self.__tcp.recv(2048)
-                            respostaRetirarCarta = respostaRetirarCarta.decode(
-                                'ascii')
-                            print(respostaRetirarCarta)
-                            print("")
-                            print("")
-
-                        elif(escolha=="5"):
-                            carta = input(
-                                'Digite o nome da carta: ')
-                            print('A carta escolhida é:', carta)
-                            self.__tcp.send(
-                                bytes('retiraAlbum:' + carta + ':' + resposta[7] + ':' + resposta[8], 'ascii'))
-
-                            respostaRetirarCarta = self.__tcp.recv(2048)
-                            respostaRetirarCarta = respostaRetirarCarta.decode(
-                                'ascii')
-                            print(respostaRetirarCarta)
-                            print("")
-                            print("")
-
-                        elif (escolha=="6"):
-                            print("Bem vindo ao leilão!")
-                            print("1) Anunciar uma Carta")
-                            print("2) Comprar/Visualizar Cartas à Venda")
-                            print("3) Retirar uma carta anunciada.")
-                            escolhaLeilao = input("Escolha uma funcionalidade: ")
-                            #Ver se já possui uma carta anunciada.
-                            if (escolhaLeilao == "1"):
-                                print(f"As cartas que você pode anunciar são: ")
-                                mensagem1 = "minhaMochila:"+resposta[7] #idMochila
-                                self.__tcp.send(bytes(mensagem1, 'ascii'))
-                                respostaCartasMochila = self.__tcp.recv(2048)
-                                respostaCartasMochila = respostaCartasMochila.decode('ascii')
-                                print(respostaCartasMochila)
-                                
-                                cartaAnunciada = input("Digite o nome da carta a ser anunciada: ")
-                                precoCarta = input("Especifique por quanto deseja leiloar essa carta: ")
-                                
-                                mensagemAnuncio = "leiloaCarta:"+resposta[7]+":"+cartaAnunciada+":"+precoCarta
-                                self.__tcp.send(bytes(mensagemAnuncio, 'ascii'))
-                                respostaLeiloaCarta = self.__tcp.recv(2048)
-                                respostaLeiloaCarta = respostaLeiloaCarta.decode('ascii')
-                                print(respostaLeiloaCarta)
-                                print("")
-                                print("")
-
-                            
-                            elif (escolhaLeilao=="2"):
-                                print("Cartas à venda: ")
-                                mensagemCartasLeilao = "mostraCartasLeilao:"
-                                self.__tcp.send(bytes(mensagemCartasLeilao, 'ascii'))
-                                respostaCartasLeilao = self.__tcp.recv(2048)
-                                respostaCartasLeilao = respostaCartasLeilao.decode('ascii')
-                                respostaCartasLeilao = eval(respostaCartasLeilao) #Transformar string em dict
-                                print(respostaCartasLeilao)
-                                """
-                                    Formalizar a saida aqui depois !!!
-                                """
-                                escolhaComprar = input("Deseja comprar alguma carta ? 1-Sim | 2-Não.")
-                                if (escolhaComprar == "1"):
-                                    print(f"Você possui {resposta[2]} coins.")
-                                    cartaDesejada = int(input("Digite o id da compra que contém sua carta de interesse: "))
-                                    print("A carta desejada é "+respostaCartasLeilao["Carta"][cartaDesejada]+", vendida por "+respostaCartasLeilao["Nome"][cartaDesejada]+" no valor de "+str(respostaCartasLeilao["Preco"][cartaDesejada])+" coins.")
-                                    if (int(resposta[2])>=int(respostaCartasLeilao["Preco"][cartaDesejada])):
-                                        mensagemVenda = "vendeLeilao:"+resposta[7]+":"+respostaCartasLeilao["Nome"][cartaDesejada]
-                                        self.__tcp.send(bytes(mensagemVenda, 'ascii'))
-                                        respostaVenda = self.__tcp.recv(2048)
-                                        respostaVenda = respostaVenda.decode('ascii')
-                                        print(respostaVenda)
-                                    else:
-                                        print("=====> [ERRO] Você não possui moedas suficientes para comprar esta carta.")
-                            print("")
-                            print("")
-                        
-                        elif (escolha=="7"):
-                            print("Oi")
                             mensagem1 = ""
                             print("As cartas que você tem na mochila são: ")
                             mensagem1 = "minhaMochila:"+resposta[7] #idMochila
@@ -268,6 +189,109 @@ class Cliente():
                             print("")
                             print("")
 
+                        
+                        elif (escolha=="5"):
+                            carta = input(
+                                'Digite o nome da carta: ')
+                            print('A carta escolhida é:', carta)
+                            self.__tcp.send(
+                                bytes('deletaCarta:' + carta + ':' + resposta[7], 'ascii'))
+
+                            respostaRetirarCarta = self.__tcp.recv(2048)
+                            respostaRetirarCarta = respostaRetirarCarta.decode(
+                                'ascii')
+                            print(respostaRetirarCarta)
+                            print("")
+                            print("")
+
+                        elif(escolha=="6"):
+                            carta = input(
+                                'Digite o nome da carta: ')
+                            print('A carta escolhida é:', carta)
+                            self.__tcp.send(
+                                bytes('retiraAlbum:' + carta + ':' + resposta[7] + ':' + resposta[8], 'ascii'))
+
+                            respostaRetirarCarta = self.__tcp.recv(2048)
+                            respostaRetirarCarta = respostaRetirarCarta.decode(
+                                'ascii')
+                            print(respostaRetirarCarta)
+                            print("")
+                            print("")
+
+                        elif (escolha=="7"):
+                            print("Bem vindo ao leilão!")
+                            print("1) Anunciar uma Carta")
+                            print("2) Comprar/Visualizar Cartas à Venda")
+                            print("3) Retirar uma carta anunciada.")
+                            escolhaLeilao = input("Escolha uma funcionalidade: ")
+                            #Ver se já possui uma carta anunciada.
+                            if (escolhaLeilao == "1"):
+                                print(f"As cartas que você pode anunciar são: ")
+                                mensagem1 = "minhaMochila:"+resposta[7] #idMochila
+                                self.__tcp.send(bytes(mensagem1, 'ascii'))
+                                respostaCartasMochila = self.__tcp.recv(2048)
+                                respostaCartasMochila = respostaCartasMochila.decode('ascii')
+                                respostaCartasMochila = respostaCartasMochila.split(",")
+                                j = 0
+                                for i in respostaCartasMochila:
+                                    i = i.replace("'","")
+                                    i = i.replace(" ","")
+                                    i = i.replace("[","")
+                                    i = i.replace("]","")
+                                    print(f"{i}")
+                                    j+=1   
+                                
+                                
+                                cartaAnunciada = input("Digite o nome da carta a ser anunciada: ")
+                                precoCarta = input("Especifique por quanto deseja leiloar essa carta: ")
+                                
+                                mensagemAnuncio = "leiloaCarta:"+resposta[7]+":"+cartaAnunciada+":"+precoCarta
+                                self.__tcp.send(bytes(mensagemAnuncio, 'ascii'))
+                                respostaLeiloaCarta = self.__tcp.recv(2048)
+                                respostaLeiloaCarta = respostaLeiloaCarta.decode('ascii')
+                                print(respostaLeiloaCarta)
+                                print("")
+                                print("")
+
+                            
+                            elif (escolhaLeilao=="2"):
+                                print("Cartas à venda: ")
+                                mensagemCartasLeilao = "mostraCartasLeilao:"
+                                self.__tcp.send(bytes(mensagemCartasLeilao, 'ascii'))
+                                respostaCartasLeilao = self.__tcp.recv(2048)
+                                respostaCartasLeilao = respostaCartasLeilao.decode('ascii')
+                                respostaCartasLeilao = eval(respostaCartasLeilao) #Transformar string em dict
+                                for i in range(len(respostaCartasLeilao["idVenda"])):
+                                    print(f""" => ID: {respostaCartasLeilao["idVenda"][i]}    |    Nome do Vendedor: {respostaCartasLeilao["Nome"][i]}   |   Carta: {respostaCartasLeilao["Carta"][i]}   |   Preço: {respostaCartasLeilao["Preco"][i]}""")
+
+                                escolhaComprar = input("Deseja comprar alguma carta ? 1-Sim | 2-Não :")
+                                if (escolhaComprar == "1"):
+                                    print(f"Você possui {resposta[2]} coins.")
+                                    cartaDesejada = int(input("Digite o id da compra que contém sua carta de interesse: "))
+                                    print("A carta desejada é "+respostaCartasLeilao["Carta"][cartaDesejada]+", vendida por "+respostaCartasLeilao["Nome"][cartaDesejada]+" no valor de "+str(respostaCartasLeilao["Preco"][cartaDesejada])+" coins.")
+                                    if (int(resposta[2])>=int(respostaCartasLeilao["Preco"][cartaDesejada])):
+                                        mensagemVenda = "vendeLeilao:"+resposta[7]+":"+respostaCartasLeilao["Nome"][cartaDesejada]
+                                        self.__tcp.send(bytes(mensagemVenda, 'ascii'))
+                                        respostaVenda = self.__tcp.recv(2048)
+                                        respostaVenda = respostaVenda.decode('ascii')
+                                        print(respostaVenda)
+                                    else:
+                                        print("=====> [ERRO] Você não possui moedas suficientes para comprar esta carta.")
+                            elif (escolhaLeilao=="3"):
+                                retiraLeilao = input("Tem certeza que deseja remover a carta anunciada ? 1 - Sim | Outro - Não: ")
+                            
+                                if (retiraLeilao == "1"):
+                                    mensagemRetiraLeilao = "retiraCartaLeilao:"+resposta[7]
+                                    self.__tcp.send(bytes(mensagemRetiraLeilao, 'ascii'))
+                                    respostaRetiraLeilao = self.__tcp.recv(2048)
+                                    respostaRetiraLeilao = respostaRetiraLeilao.decode('ascii')
+                                    print(respostaRetiraLeilao)
+
+                            
+                            print("")
+                            print("")
+                        
+                        
                         elif (escolha=="0"):
                             break
                         
