@@ -64,7 +64,8 @@ class Cliente():
                         print("4) Deletar Carta da Mochila.")
                         print("5) Mover Carta do Álbum para a Mochila.")
                         print("6) Leiloar/Comprar uma Carta.")
-                        print("0) Sair.")
+                        print("7) Visualizar Cartas na Mochila.")
+                        print("0) Logoff.")
                         escolha = input("Digite sua escolha: ")
                         print("")
                         print("")
@@ -116,19 +117,21 @@ class Cliente():
                             else:
                                 #print(respostaCartasMochila)
                                 print("=====> Suas cartas são: ")
-                                myCards = respostaCartasMochila.split(",")
+                                myCards = respostaCartasMochila.split(",")                                
                                 j = 0
                                 for i in myCards:
                                     i = i.replace("'","")
                                     i = i.replace(" ","")
                                     i = i.replace("[","")
                                     i = i.replace("]","")
+                                    myCards[j] = i
                                     print(f"{j}) {i}")
                                     j+=1 
                                     
                                 """
                                     Tratar aqui depois: deixar o cara digitar apenas uma das cartas mostradas.
                                 """
+                                print(f"{myCards}    {type(myCards)}")
                                 escolhaCarta = input("Digite o nome da carta que você quer inserir no álbum: ")
                                 if (escolhaCarta in myCards):
                                     mensagem2 = "insereAlbum:"+resposta[7]+":"+resposta[8]+":"+escolhaCarta #idMochila:idAlbum:Python
@@ -172,7 +175,7 @@ class Cliente():
                             print("")
                             print("")
 
-                        elif(carta=="5"):
+                        elif(escolha=="5"):
                             carta = input(
                                 'Digite o nome da carta: ')
                             print('A carta escolhida é:', carta)
@@ -237,9 +240,33 @@ class Cliente():
                                         print(respostaVenda)
                                     else:
                                         print("=====> [ERRO] Você não possui moedas suficientes para comprar esta carta.")
-                                print("")
-                                print("")
-
+                            print("")
+                            print("")
+                        
+                        elif (escolha=="7"):
+                            print("Oi")
+                            mensagem1 = ""
+                            print("As cartas que você tem na mochila são: ")
+                            mensagem1 = "minhaMochila:"+resposta[7] #idMochila
+                            self.__tcp.send(bytes(mensagem1, 'ascii'))
+                            respostaCartasMochila_2 = self.__tcp.recv(2048)
+                            respostaCartasMochila_2 = respostaCartasMochila_2.decode('ascii')
+                            if (respostaCartasMochila_2=="0"):
+                                print(f"=====> Você ainda não possui cartas na mochila !")
+                            else:
+                                #print(respostaCartasMochila)
+                                print("=====> Suas cartas são: ")
+                                myCards = respostaCartasMochila_2.split(",")
+                                j = 0
+                                for i in myCards:
+                                    i = i.replace("'","")
+                                    i = i.replace(" ","")
+                                    i = i.replace("[","")
+                                    i = i.replace("]","")
+                                    print(f"{j}) {i}")
+                                    j+=1                
+                            print("")
+                            print("")
 
                         elif (escolha=="0"):
                             break
