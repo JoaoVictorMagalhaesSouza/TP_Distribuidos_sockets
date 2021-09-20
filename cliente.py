@@ -21,7 +21,23 @@ class Cliente():
     def __method(self):  # __ é privado
         try:
             mensagem = ""
-            mensagem = input("Digite a operação: ")
+            print("############################################################################")
+            print("Olá ! Seja bem vindo ao Programming Language Collection")
+            print(" ==> 1) Fazer cadastro.")
+            print(" ==> 2) Fazer login.")
+            print("############################################################################")
+            escolha = input("Digite a operação: ")
+            if (escolha=="1"):
+                nick = input("Digite seu nickname: ")
+                senha = input("Digite sua senha: ")
+                nome = input("Digite seu nome: ")
+                email = input("Digite seu email")
+                mensagem = "cadastro:0:"+nick+":"+senha+":"+nome+":"+email
+            else:
+                nick = input("Digite seu nickname: ")
+                senha = input("Digite sua senha: ")
+                mensagem = "login:"+nick+":"+senha
+            
             while mensagem != "x":
                 self.__tcp.send(bytes(mensagem, 'ascii'))
                 resposta = self.__tcp.recv(2048)
@@ -34,9 +50,11 @@ class Cliente():
                         item = item.replace(y, "")
                     novo.append(item)
                 resposta=novo
-                print(f"= Resposta: {novo}")
+                if(resposta[0]!='login'):
+                    print(f"= Resposta: {resposta}")
                 #('login', 1, 300, 'a', 'b', 'c', 'd', 1, 1)
                 if (resposta[0] == 'login'): #Se o login for bem sucedido.
+                    print("=====> Login realizado com sucesso !")
                     while True:
                         
                         print("BEM VINDO(A) AO NOSSO GAME!")
@@ -48,15 +66,20 @@ class Cliente():
                         print("6) Leiloar/Comprar uma Carta.")
                         print("0) Sair.")
                         escolha = input("Digite sua escolha: ")
+                        print("")
+                        print("")
                         if (escolha=="1"): #Loja
                             print("Pacotinhos disponíveis:")
                             print("1) 1 carta aleatória = $50 coins.")
                             print("2) 3 cartas aleatórias = $135 coins.")
                             print("3) 5 cartas aleatórias = $225 coins.")
-                            
                             pacotinho = input(f"Você tem {resposta[2]} coins. Escolha qual pacotinho quer comprar: ")
+                            print("")
+                            print("")
+                            
+                            
                             if (int(resposta[2]) < 50):
-                                print("Voce nao tem moedas suficentes! Faca uma recarga agora!")
+                                print("=====> [ERRO] Voce nao tem moedas suficentes! Faca uma recarga agora!")
                                 continue
                             elif (pacotinho=="1") and (int(resposta[2])>=50):
                                 cartaPacote = []
@@ -79,6 +102,9 @@ class Cliente():
                             respostaLoja = self.__tcp.recv(2048)
                             respostaLoja = respostaLoja.decode('ascii')
                             print(respostaLoja)
+                            print("")
+                            print("")
+
                         elif (escolha=="2"):
                             print("As cartas que você tem na mochila são: ")
                             mensagem1 = "minhaMochila:"+resposta[7] #idMochila
@@ -86,24 +112,79 @@ class Cliente():
                             respostaCartasMochila = self.__tcp.recv(2048)
                             respostaCartasMochila = respostaCartasMochila.decode('ascii')
                             if (respostaCartasMochila=="0"):
-                                print(f"Você ainda não possui cartas na mochila !")
+                                print(f"=====> Você ainda não possui cartas na mochila !")
                             else:
-                                print(respostaCartasMochila)
+                                #print(respostaCartasMochila)
+                                print("=====> Suas cartas são: ")
+                                myCards = respostaCartasMochila.split(",")
+                                j = 0
+                                for i in myCards:
+                                    i = i.replace("'","")
+                                    i = i.replace(" ","")
+                                    i = i.replace("[","")
+                                    i = i.replace("]","")
+                                    print(f"{j}) {i}")
+                                    j+=1 
+                                    
                                 """
                                     Tratar aqui depois: deixar o cara digitar apenas uma das cartas mostradas.
                                 """
                                 escolhaCarta = input("Digite o nome da carta que você quer inserir no álbum: ")
-                                mensagem2 = "insereAlbum:"+resposta[7]+":"+resposta[8]+":"+escolhaCarta #idMochila:idAlbum:Python
-                                self.__tcp.send(bytes(mensagem2, 'ascii'))   
-                                respostaInsereAlbum = self.__tcp.recv(2048)
-                                respostaInsereAlbum = respostaInsereAlbum.decode('ascii')
-                                print(respostaInsereAlbum)
+                                if (escolhaCarta in myCards):
+                                    mensagem2 = "insereAlbum:"+resposta[7]+":"+resposta[8]+":"+escolhaCarta #idMochila:idAlbum:Python
+                                    self.__tcp.send(bytes(mensagem2, 'ascii'))   
+                                    respostaInsereAlbum = self.__tcp.recv(2048)
+                                    respostaInsereAlbum = respostaInsereAlbum.decode('ascii')
+                                    print(respostaInsereAlbum)
+                                else:
+                                    print("=====> [ERRO] Digite uma carta que você possui !")
+                            print("")
+                            print("")
+
                         elif (escolha=="3"):
                             mensagem3 = "visualizaAlbum:"+resposta[8]
                             self.__tcp.send(bytes(mensagem3, 'ascii'))   
                             respostaVisualizaAlbum = self.__tcp.recv(2048)
                             respostaVisualizaAlbum = respostaVisualizaAlbum.decode('ascii')
-                            print(f"As cartas do seu album sao: {respostaVisualizaAlbum}")
+                            myAlbum = respostaVisualizaAlbum.split(",")
+                            print(f"=====> As cartas do seu album sao: ")
+                            for i in myAlbum:
+                                i = i.replace("'","")
+                                i = i.replace(" ","")
+                                i = i.replace("[","")
+                                i = i.replace("]","")
+                                print(f"{i}")
+                            print("")
+                            print("")
+
+                            
+                        elif (escolha=="4"):
+                            carta = input(
+                                'Digite o nome da carta: ')
+                            print('A carta escolhida é:', carta)
+                            self.__tcp.send(
+                                bytes('deletaCarta:' + carta + ':' + resposta[7], 'ascii'))
+
+                            respostaRetirarCarta = self.__tcp.recv(2048)
+                            respostaRetirarCarta = respostaRetirarCarta.decode(
+                                'ascii')
+                            print(respostaRetirarCarta)
+                            print("")
+                            print("")
+
+                        elif(carta=="5"):
+                            carta = input(
+                                'Digite o nome da carta: ')
+                            print('A carta escolhida é:', carta)
+                            self.__tcp.send(
+                                bytes('retiraAlbum:' + carta + ':' + resposta[7] + ':' + resposta[8], 'ascii'))
+
+                            respostaRetirarCarta = self.__tcp.recv(2048)
+                            respostaRetirarCarta = respostaRetirarCarta.decode(
+                                'ascii')
+                            print(respostaRetirarCarta)
+                            print("")
+                            print("")
 
                         elif (escolha=="6"):
                             print("Bem vindo ao leilão!")
@@ -128,6 +209,9 @@ class Cliente():
                                 respostaLeiloaCarta = self.__tcp.recv(2048)
                                 respostaLeiloaCarta = respostaLeiloaCarta.decode('ascii')
                                 print(respostaLeiloaCarta)
+                                print("")
+                                print("")
+
                             
                             elif (escolhaLeilao=="2"):
                                 print("Cartas à venda: ")
@@ -151,8 +235,10 @@ class Cliente():
                                         respostaVenda = self.__tcp.recv(2048)
                                         respostaVenda = respostaVenda.decode('ascii')
                                         print(respostaVenda)
-
-
+                                    else:
+                                        print("=====> [ERRO] Você não possui moedas suficientes para comprar esta carta.")
+                                print("")
+                                print("")
 
 
                         elif (escolha=="0"):
@@ -160,7 +246,23 @@ class Cliente():
                         
 
 
-                mensagem = input("Digite a operação: ")
+                mensagem = ""
+                print("############################################################################")
+                print("Olá ! Seja bem vindo ao Programming Language Collection")
+                print(" ==> 1) Fazer cadastro.")
+                print(" ==> 2) Fazer login.")
+                print("############################################################################")
+                escolha = input("Digite a operação: ")
+                if (escolha=="1"):
+                    nick = input("Digite seu nickname: ")
+                    senha = input("Digite sua senha: ")
+                    nome = input("Digite seu nome: ")
+                    email = input("Digite seu email")
+                    mensagem = "cadastro:0:"+nick+":"+senha+":"+nome+":"+email
+                else:
+                    nick = input("Digite seu nickname: ")
+                    senha = input("Digite sua senha: ")
+                    mensagem = "login:"+nick+":"+senha
 
             self.__tcp.close()
         except Exception as e:
