@@ -5,8 +5,34 @@ from os import set_inheritable
 import socket
 import mysql.connector
 from mysql.connector import Error as db_error
-
+from threading import Timer
 # Python e MySQL : https://pynative.com/python-mysql-insert-data-into-database-table/
+
+
+class RepeatedTimer(object):
+    def __init__(self, interval, function, *args, **kwargs):
+        self._timer = None
+        self.interval = interval
+        self.function = function
+        self.args = args
+        self.kwargs = kwargs
+        self.is_running = False
+        self.start()
+
+    def _run(self):
+        self.is_running = False
+        self.start()
+        self.function(*self.args, **self.kwargs)
+
+    def start(self):
+        if not self.is_running:
+            self._timer = Timer(self.interval, self._run)
+            self._timer.start()
+            self.is_running = True
+
+    def stop(self):
+        self._timer.cancel()
+        self.is_running = False
 
 
 class Server():
@@ -29,7 +55,7 @@ class Server():
                 connection = mysql.connector.connect(host='localhost',
                                                      database='bd_distribuidos',
                                                      user='root',
-                                                     password='JVictor@00')
+                                                     password='1234')
 
                 if connection.is_connected():
                     cursor = connection.cursor()
@@ -45,7 +71,7 @@ class Server():
                     con, cliente = self._tcp.accept()
                     # Executar os serviços.
                     self._service(con, cliente, cursor, connection)
-                
+
                 if connection.is_connected():
                     connection.close()
                     print("MySQL connection is closed")
@@ -54,6 +80,7 @@ class Server():
 
     def _service(self, con, cliente, cursor, connection):
         # Método dos serviços do servidor (banco de dados)
+        rt = None  # timer
         while True:
             print(f"Atendendo o cliente {cliente}")
             try:
@@ -73,26 +100,35 @@ class Server():
                     resposta = self.__cadastro(
                         cursor, connection, msg[1], msg[2], msg[3], msg[4], msg[5])
                 elif (msg[0] == "login"):
+                    if (rt != None):
+                        rt.stop()
+                    rt = RepeatedTimer(
+                        120, self.__getCoins, cursor, connection, msg[1])
                     resposta = self.__login(cursor, connection, msg[1], msg[2])
                 elif (msg[0] == "loja"):
                     cartas = []
-                    for i in range(4,len(msg)):
-                        
+                    for i in range(4, len(msg)):
+
                         cartas.append(int(msg[i]))
-                    
-                    resposta = self.__compraCartaLoja(cursor,connection,msg[1],msg[2],msg[3],cartas)
+
+                    resposta = self.__compraCartaLoja(
+                        cursor, connection, msg[1], msg[2], msg[3], cartas)
                 elif (msg[0] == "minhaMochila"):
-                    resposta = self.__minhaMochila(cursor,connection,msg[1])
+                    resposta = self.__minhaMochila(cursor, connection, msg[1])
                 elif (msg[0] == "insereAlbum"):
-                    resposta = self.__insereAlbum(cursor,connection,msg[1],msg[2],msg[3])
+                    resposta = self.__insereAlbum(
+                        cursor, connection, msg[1], msg[2], msg[3])
                 elif (msg[0] == "visualizaAlbum"):
-                    resposta = self.__visualizaAlbum(cursor,connection,msg[1])
+                    resposta = self.__visualizaAlbum(
+                        cursor, connection, msg[1])
                 elif (msg[0] == "leiloaCarta"):
-                    resposta = self.__colocaCartaLeilao(cursor,connection,msg[1],msg[2],msg[3])
+                    resposta = self.__colocaCartaLeilao(
+                        cursor, connection, msg[1], msg[2], msg[3])
                 elif (msg[0] == "mostraCartasLeilao"):
-                    resposta = self.__mostraCartasLeilao(cursor,connection)
+                    resposta = self.__mostraCartasLeilao(cursor, connection)
                 elif (msg[0] == "vendeLeilao"):
-                    resposta = self.__vendeLeilao(cursor,connection,msg[1],msg[2])
+                    resposta = self.__vendeLeilao(
+                        cursor, connection, msg[1], msg[2])
                 elif (msg[0] == "retiraAlbum"):
                     # print(
                     #     f'{msg[1].strip()}:{msg[2].strip()}:{msg[3].strip()}')
@@ -103,7 +139,11 @@ class Server():
                         cursor, connection, msg[1], msg[2])
                 # __deletaCarta
                 elif (msg[0] == "retiraCartaLeilao"):
-                    resposta = self.__retiraCartaLeilao(cursor,connection,msg[1])
+                    resposta = self.__retiraCartaLeilao(
+                        cursor, connection, msg[1])
+                elif (msg[0] == "logout"):
+                    rt.stop()
+                    rt = None
                 else:
                     break
 
@@ -120,18 +160,18 @@ class Server():
     """
         Seção para criarmos as funcionalidades do servidor de cadastro, login, etc :
     """
-    def __retiraCartaLeilao(self,cursor,connection,idMochila):
+
+    def __retiraCartaLeilao(self, cursor, connection, idMochila):
         try:
             queryBusca = f"SELECT * FROM leilao WHERE ( Mochila_has_Carta_Mochila_idMochila = '{idMochila}');"
-            
-            
+
             cursor = connection.cursor()
             cursor.execute(queryBusca)
             verificacao = cursor.fetchall()
             for i in verificacao:
                 idCarta = i[2]
 
-            if (len(verificacao)>0): #Usuario possui carta no leilao
+            if (len(verificacao) > 0):  # Usuario possui carta no leilao
                 queryTiraLeilao = f"DELETE FROM leilao WHERE ( Mochila_has_Carta_Mochila_idMochila = '{idMochila}');"
                 result = cursor.execute(queryTiraLeilao)
                 connection.commit()
@@ -160,7 +200,7 @@ class Server():
         if len(verificacao) > 0:  # a carta passada (nome) é válida
             try:
                 idCarta = verificacao[0][0]
-                #print('O id da carta é', idCarta)  # certo
+                # print('O id da carta é', idCarta)  # certo
                 queryExisteSlotOcupado = f"SELECT is_ocupado FROM Album_has_Slot WHERE Album_idAlbum = '{idAlbum}' and Slot_Carta_idCarta = '{idCarta}';"
                 cursor = connection.cursor()
                 cursor.execute(queryExisteSlotOcupado)
@@ -217,61 +257,71 @@ class Server():
                     return("=====> [ERRO] Você nao tem nenhuma carta dessas!")
             except db_error:
                 return("=====> [ERRO NO BANCO] Erro na delecao da carta")
-    
-    def __vendeLeilao(self,cursor,connection,idMochilaComprador,nicknameVendedor):
+
+    def __vendeLeilao(self, cursor, connection, idMochilaComprador, nicknameVendedor):
         try:
             """
                 Obter informações do vendedor.
             """
-            queryIDVendedor = "SELECT * FROM usuario WHERE (nickname = '"+nicknameVendedor+"');"
+            queryIDVendedor = "SELECT * FROM usuario WHERE (nickname = '" + \
+                nicknameVendedor+"');"
             cursor = connection.cursor()
             cursor.execute(queryIDVendedor)
             verificacao = cursor.fetchall()
             for i in verificacao:
-                idVendedor = i[0] #Nickname único
+                idVendedor = i[0]  # Nickname único
                 mochilaVendedor = i[6]
-            
+
             """
                 Obter informações sobre a carta a ser comprada.
             """
-            queryInfoCarta = "SELECT * FROM leilao WHERE (Mochila_has_Carta_Mochila_idMochila = '"+str(mochilaVendedor)+"');"
+            queryInfoCarta = "SELECT * FROM leilao WHERE (Mochila_has_Carta_Mochila_idMochila = '"+str(
+                mochilaVendedor)+"');"
             cursor = connection.cursor()
             cursor.execute(queryInfoCarta)
             verificacao = cursor.fetchall()
             for i in verificacao:
                 precoCarta = i[3]
                 idCarta = i[2]
-            
+
             """
                 Removendo do leilão 
             """
-            queryDeletaLeilao = "DELETE FROM leilao WHERE (Mochila_has_Carta_Mochila_idMochila = '"+str(mochilaVendedor)+"');"
+            queryDeletaLeilao = "DELETE FROM leilao WHERE (Mochila_has_Carta_Mochila_idMochila = '"+str(
+                mochilaVendedor)+"');"
             result = cursor.execute(queryDeletaLeilao)
             connection.commit()
             """
                 Inserindo a carta na mochila do comprador e debitando as coins dele
             """
-            queryVerificaCarta = "SELECT * FROM mochila_has_carta WHERE (Mochila_idMochila = '"+str(idMochilaComprador)+"' and Carta_idCarta = '"+str(idCarta)+"');"
+            queryVerificaCarta = "SELECT * FROM mochila_has_carta WHERE (Mochila_idMochila = '"+str(
+                idMochilaComprador)+"' and Carta_idCarta = '"+str(idCarta)+"');"
             cursor = connection.cursor()
             cursor.execute(queryVerificaCarta)
             verificacao = cursor.fetchall()
-            if (len(verificacao)>0): #Significa que eu tenho a carta
-                queryInsertCarta = "UPDATE mochila_has_carta SET numero = numero + 1 WHERE (Mochila_idMochila = '"""+str(idMochilaComprador)+"' and Carta_idCarta = '"+str(idCarta)+"');"
+            if (len(verificacao) > 0):  # Significa que eu tenho a carta
+                queryInsertCarta = "UPDATE mochila_has_carta SET numero = numero + 1 WHERE (Mochila_idMochila = '"""+str(
+                    idMochilaComprador)+"' and Carta_idCarta = '"+str(idCarta)+"');"
                 result = cursor.execute(queryInsertCarta)
                 connection.commit()
             else:
-                queryInsertCarta = "INSERT INTO mochila_has_carta VALUES ('"+str(idMochilaComprador)+"','"+str(idCarta)+"',1);"
+                queryInsertCarta = "INSERT INTO mochila_has_carta VALUES ('"+str(
+                    idMochilaComprador)+"','"+str(idCarta)+"',1);"
                 result = cursor.execute(queryInsertCarta)
                 connection.commit()
 
-            queryTiraCoins = "UPDATE usuario SET coins = coins - "+str(precoCarta)+" WHERE (Mochila_idMochila = '"+str(idMochilaComprador)+"');"
+            queryTiraCoins = "UPDATE usuario SET coins = coins - " + \
+                str(precoCarta)+" WHERE (Mochila_idMochila = '" + \
+                str(idMochilaComprador)+"');"
             result = cursor.execute(queryTiraCoins)
             connection.commit()
 
             """
                 Inserindo as coins no vendedor
             """
-            queryInsereCoins = "UPDATE usuario SET coins = coins + "+str(precoCarta)+" WHERE (Mochila_idMochila = '"+str(mochilaVendedor)+"');"
+            queryInsereCoins = "UPDATE usuario SET coins = coins + " + \
+                str(precoCarta)+" WHERE (Mochila_idMochila = '" + \
+                str(mochilaVendedor)+"');"
             result = cursor.execute(queryInsereCoins)
             connection.commit()
             return ("=====> Compra realizada com sucesso !")
@@ -279,8 +329,7 @@ class Server():
         except db_error:
             return ("=====> [ERRO NO BANCO] Erro na transferencia entre as cartas.")
 
-    
-    def __mostraCartasLeilao(self,cursor,connection):
+    def __mostraCartasLeilao(self, cursor, connection):
         try:
             queryMostraCartas = "SELECT * FROM leilao;"
             #print(f"Q2: {queryMostraCartas}")
@@ -292,51 +341,54 @@ class Server():
             nomeAnunciante = []
             precoCarta = []
             ids = []
-            for i in verificacao:            
-                #idMochila.append(i[1])
-                aux = i[1] #Qual o usuario ?
-                query1 = "SELECT * FROM usuario WHERE (Mochila_idMochila = '"+str(i[1])+"');"
+            for i in verificacao:
+                # idMochila.append(i[1])
+                aux = i[1]  # Qual o usuario ?
+                query1 = "SELECT * FROM usuario WHERE (Mochila_idMochila = '"+str(
+                    i[1])+"');"
                 cursor = connection.cursor()
                 cursor.execute(query1)
                 verificacao2 = cursor.fetchall()
                 for j in verificacao2:
                     nomeAnunciante.append(j[2])
-                
-                query2 = "SELECT * FROM carta WHERE (idCarta = '"+str(i[2])+"');"
+
+                query2 = "SELECT * FROM carta WHERE (idCarta = '" + \
+                    str(i[2])+"');"
                 cursor = connection.cursor()
                 cursor.execute(query2)
                 verificacao3 = cursor.fetchall()
                 for j in verificacao3:
                     nomeCarta.append(j[1])
-                           
-                
+
                 precoCarta.append(i[3])
             for i in range(len(verificacao)):
                 ids.append(i)
             dados["idVenda"] = ids
-            dados["Nome"] = nomeAnunciante 
+            dados["Nome"] = nomeAnunciante
             dados["Carta"] = nomeCarta
             dados["Preco"] = precoCarta
             return(dados)
         except db_error:
             return("=====> [ERRO NO BANCO] Erro ao mostrar cartas leiloadas.")
 
-    def __colocaCartaLeilao(self,cursor,connection,idMochila,carta,precoCarta):
+    def __colocaCartaLeilao(self, cursor, connection, idMochila, carta, precoCarta):
         try:
             """
                 Primeiro vamos verificar se o usuario já possui cartas no leilão, pois ele só pode anunciar 1 carta por vez.
             """
-            queryVerificaLeilao = "SELECT * FROM leilao WHERE (Mochila_has_Carta_Mochila_idMochila = '"+str(idMochila)+"');"
+            queryVerificaLeilao = "SELECT * FROM leilao WHERE (Mochila_has_Carta_Mochila_idMochila = '"+str(
+                idMochila)+"');"
             cursor = connection.cursor()
             cursor.execute(queryVerificaLeilao)
             verificacao = cursor.fetchall()
-            if (len(verificacao)>0): #Significa que o usuário já possui carta no leilão
+            if (len(verificacao) > 0):  # Significa que o usuário já possui carta no leilão
                 carta = []
                 nomeCarta = ""
                 for i in verificacao:
                     carta.append(i[2])
                 for i in carta:
-                    query = "SELECT * FROM carta WHERE (idCarta = '"+str(i)+"');"
+                    query = "SELECT * FROM carta WHERE (idCarta = '" + \
+                        str(i)+"');"
                     #print(f"Q1: {query}")
                     cursor = connection.cursor()
                     cursor.execute(query)
@@ -351,7 +403,8 @@ class Server():
                 """
                     Primeiro pesquisar o id da carta a ser leiloada
                 """
-                queryIdCarta = "SELECT idCarta FROM carta WHERE (nome = '"+str(carta)+"');"
+                queryIdCarta = "SELECT idCarta FROM carta WHERE (nome = '"+str(
+                    carta)+"');"
                 #print(f"Q2: {queryIdCarta}")
                 cursor = connection.cursor()
                 cursor.execute(queryIdCarta)
@@ -361,37 +414,42 @@ class Server():
                 novo = []
                 for x in idCarta:
                     idCarta = str(x)
-                #print(f"{idCarta}")
-                queryCriaLeilao = "INSERT INTO leilao (Mochila_has_Carta_Mochila_idMochila,Mochila_has_Carta_Carta_idCarta,precoCarta) VALUES ('"+str(idMochila)+"','"+str(idCarta)+"','"+str(precoCarta)+"');"
+                # print(f"{idCarta}")
+                queryCriaLeilao = "INSERT INTO leilao (Mochila_has_Carta_Mochila_idMochila,Mochila_has_Carta_Carta_idCarta,precoCarta) VALUES ('"+str(
+                    idMochila)+"','"+str(idCarta)+"','"+str(precoCarta)+"');"
                 #print(f"Q3: {queryCriaLeilao}")
                 result = cursor.execute(queryCriaLeilao)
                 connection.commit()
                 """
                     Carta inserida no leilão, remover da mochila.
                 """
-                queryRemocao = "UPDATE mochila_has_carta SET numero = numero - 1 WHERE (Mochila_idMochila = '"""+str(idMochila)+"' and Carta_idCarta = '"+str(idCarta)+"');"
+                queryRemocao = "UPDATE mochila_has_carta SET numero = numero - 1 WHERE (Mochila_idMochila = '"""+str(
+                    idMochila)+"' and Carta_idCarta = '"+str(idCarta)+"');"
                 #print(f"Q4: {queryRemocao}")
                 result = cursor.execute(queryRemocao)
                 connection.commit()
                 return("=====> Carta leiloada com sucesso. ")
         except db_error:
             return("=====> [ERRO NO BANCO]Erro ao anunciar carta no leilao!")
-    def __visualizaAlbum(self,cursor,connection,idAlbum):
+
+    def __visualizaAlbum(self, cursor, connection, idAlbum):
         try:
-            #Mostrar somente as cartas que ele colocou no álbum.
-            queryVisualizaAlbum = "SELECT * FROM album_has_slot WHERE (Album_idAlbum = '"+idAlbum+"' and is_ocupado=1);"
+            # Mostrar somente as cartas que ele colocou no álbum.
+            queryVisualizaAlbum = "SELECT * FROM album_has_slot WHERE (Album_idAlbum = '" + \
+                idAlbum+"' and is_ocupado=1);"
             cursor = connection.cursor()
             cursor.execute(queryVisualizaAlbum)
             verificacao = cursor.fetchall()
             cartas = []
             nomeCartas = []
-            if (len(verificacao)==0):
+            if (len(verificacao) == 0):
                 return("Voce ainda nao possui cartas no album.")
             else:
                 for i in verificacao:
                     cartas.append(i[2])
                 for i in cartas:
-                    query = "SELECT * FROM carta WHERE (idCarta = '"+str(i)+"');"
+                    query = "SELECT * FROM carta WHERE (idCarta = '" + \
+                        str(i)+"');"
                     print(f"Q1: {query}")
                     cursor = connection.cursor()
                     cursor.execute(query)
@@ -400,58 +458,61 @@ class Server():
                         nomeCartas.append(j[1])
                 return(nomeCartas)
 
-
         except db_error:
             return("=====> [ERRO NO BANCO] Nao foi possivel exibir o album.")
-    
-    def __insereAlbum(self,cursor,connection,idMochila,idAlbum,nomeCarta):
+
+    def __insereAlbum(self, cursor, connection, idMochila, idAlbum, nomeCarta):
         try:
-            
+
             """
                 Primeiro tirar a carta da mochila.
             """
-            queryIdentificacao = "SELECT * FROM carta WHERE (nome = '"+nomeCarta+"');"
+            queryIdentificacao = "SELECT * FROM carta WHERE (nome = '" + \
+                nomeCarta+"');"
             cursor = connection.cursor()
             cursor.execute(queryIdentificacao)
             verificacao = cursor.fetchall()
-            
+
             for i in verificacao:
                 idCarta = i[0]
-            queryRemocao = "UPDATE mochila_has_carta SET numero = numero - 1 WHERE (Mochila_idMochila = '"""+str(idMochila)+"' and Carta_idCarta = '"+str(idCarta)+"');"
+            queryRemocao = "UPDATE mochila_has_carta SET numero = numero - 1 WHERE (Mochila_idMochila = '"""+str(
+                idMochila)+"' and Carta_idCarta = '"+str(idCarta)+"');"
             #print(f"QR {queryRemocao}")
             result = cursor.execute(queryRemocao)
             connection.commit()
-            
+
             """
                 Verificar se a carta já está lá
             """
-            queryVerificaAlbum = "SELECT * FROM album_has_slot WHERE (Album_idAlbum = '"+str(idAlbum)+"' and Slot_Carta_idCarta = '"+str(idCarta)+"' and is_ocupado = 0);"
+            queryVerificaAlbum = "SELECT * FROM album_has_slot WHERE (Album_idAlbum = '"+str(
+                idAlbum)+"' and Slot_Carta_idCarta = '"+str(idCarta)+"' and is_ocupado = 0);"
             #print(f"QV {queryVerificaAlbum}")
             cursor = connection.cursor()
             cursor.execute(queryVerificaAlbum)
             verificacao = cursor.fetchall()
-            
-            #print(len(verificacao))
-            if (len(verificacao)==1): #Significa que a carta ainda não está no Album
-                queryAdicionaAlbum = "UPDATE album_has_slot SET is_ocupado = 1 WHERE (Album_idAlbum = '"+str(idAlbum)+"' and Slot_Carta_idCarta = '"+str(idCarta)+"');"
+
+            # print(len(verificacao))
+            if (len(verificacao) == 1):  # Significa que a carta ainda não está no Album
+                queryAdicionaAlbum = "UPDATE album_has_slot SET is_ocupado = 1 WHERE (Album_idAlbum = '"+str(
+                    idAlbum)+"' and Slot_Carta_idCarta = '"+str(idCarta)+"');"
                 result = cursor.execute(queryAdicionaAlbum)
                 connection.commit()
                 return("=====> Carta inserida no album com sucesso!")
-            else: #Siginifica que a carta já está no album
+            else:  # Siginifica que a carta já está no album
                 return("=====> [ERRO] Carta ja esta no album.")
         except db_error:
             return("=====> [ERRO NO BANCO] Erro ao inserir carta no album.")
-        
-    
-    def __minhaMochila(self,cursor,connection,idMochila):
+
+    def __minhaMochila(self, cursor, connection, idMochila):
         try:
-            queryVisualizaMochila = "SELECT * FROM mochila_has_carta WHERE (Mochila_idMochila = '"+idMochila+"' and numero > 0);"
+            queryVisualizaMochila = "SELECT * FROM mochila_has_carta WHERE (Mochila_idMochila = '" + \
+                idMochila+"' and numero > 0);"
             #print(f"Q0: {queryVisualizaMochila}")
             cursor = connection.cursor()
             cursor.execute(queryVisualizaMochila)
             verificacao = cursor.fetchall()
             cartas = []
-            nomeCartas =  []
+            nomeCartas = []
             for i in verificacao:
                 cartas.append(i[1])
 
@@ -464,9 +525,8 @@ class Server():
                 for j in verificacao:
                     nomeCartas.append(j[1])
 
-
             #print(f"Cartas que o usuario possui: {cartas}")
-            if (len(nomeCartas)==0):
+            if (len(nomeCartas) == 0):
                 return("0")
             else:
                 return(nomeCartas)
@@ -474,34 +534,38 @@ class Server():
         except db_error:
             return("=====> [ERRO NO BANCO] Erro ao visualizar dados da mochila do usuário.")
 
-    def __compraCartaLoja(self,cursor,connection,coinsRemovidas,idMochila,idUser,cartas):
-        
-# <>loja - -> tipo compra(5 cartas randons) --> tem que criar mochila_has_carta com o id
-    # gerado randomicamente, além disso deve retirar a quantidade de coins.
-    # <INSERT INTO mochila_has_carta VALUE(resultados[6], random, 1);>
-    # <UPDATE usuario SET coins = coins - 25 WHERE idUsuario = resultados[0];>
+    def __compraCartaLoja(self, cursor, connection, coinsRemovidas, idMochila, idUser, cartas):
+
+        # <>loja - -> tipo compra(5 cartas randons) --> tem que criar mochila_has_carta com o id
+        # gerado randomicamente, além disso deve retirar a quantidade de coins.
+        # <INSERT INTO mochila_has_carta VALUE(resultados[6], random, 1);>
+        # <UPDATE usuario SET coins = coins - 25 WHERE idUsuario = resultados[0];>
         try:
             #print(f"Coins: {coinsRemovidas}")
             #print(f"Cartas: {cartas}")
-            for i in cartas: #Avaliar cada carta a ser inserida...
-                #Primeiro temos que verificar se a carta já está na mochila
-                queryVerificaCartaMochila = """SELECT * FROM mochila_has_carta WHERE (Mochila_idMochila = '"""+str(idMochila)+"' and Carta_idCarta = '"+str(i)+"');"
+            for i in cartas:  # Avaliar cada carta a ser inserida...
+                # Primeiro temos que verificar se a carta já está na mochila
+                queryVerificaCartaMochila = """SELECT * FROM mochila_has_carta WHERE (Mochila_idMochila = '"""+str(
+                    idMochila)+"' and Carta_idCarta = '"+str(i)+"');"
                 #print(f"Q1: {queryVerificaCartaMochila}")
                 cursor = connection.cursor()
                 cursor.execute(queryVerificaCartaMochila)
                 verificacao = cursor.fetchall()
-               
-                if (len(verificacao) > 0): #Carta já está na mochila
-                    queryInsereMochila = "UPDATE mochila_has_carta SET numero = numero + 1 WHERE (Mochila_idMochila = '"""+str(idMochila)+"' and Carta_idCarta = '"+str(i)+"');"
+
+                if (len(verificacao) > 0):  # Carta já está na mochila
+                    queryInsereMochila = "UPDATE mochila_has_carta SET numero = numero + 1 WHERE (Mochila_idMochila = '"""+str(
+                        idMochila)+"' and Carta_idCarta = '"+str(i)+"');"
                 else:
-                    queryInsereMochila = """INSERT INTO mochila_has_carta VALUES("""+"'"+str(idMochila)+"','"+str(i)+"','1');"
+                    queryInsereMochila = """INSERT INTO mochila_has_carta VALUES("""+"'"+str(
+                        idMochila)+"','"+str(i)+"','1');"
                 #print(f"Q2: {queryInsereMochila}")
                 result = cursor.execute(queryInsereMochila)
                 connection.commit()
             """
                 Remover as coins
             """
-            queryRemoveCoins = "UPDATE usuario SET coins = coins -"+coinsRemovidas+" WHERE (idUsuario = '"+idUser+"'); "
+            queryRemoveCoins = "UPDATE usuario SET coins = coins -" + \
+                coinsRemovidas+" WHERE (idUsuario = '"+idUser+"'); "
             #print(f"Q3: {queryRemoveCoins}")
             result = cursor.execute(queryRemoveCoins)
             connection.commit()
@@ -509,6 +573,23 @@ class Server():
 
         except db_error:
             return("=====> [ERRO NO BANCO] Erro ao comprar carta!")
+
+    def __getCoins(self, cursor, connection, nickname):
+        # idUser = ?
+        try:
+            # pegar idUser a partir do nickname
+            queryRecebeId = f"SELECT idUsuario from Usuario WHERE nickname = '{nickname}';"
+            cursor = connection.cursor()
+            cursor.execute(queryRecebeId)
+            verificacao = cursor.fetchall()
+            if (len(verificacao) > 0):
+                idUser = verificacao[0][0]
+                queryInsereCoins = f"UPDATE Usuario SET coins = coins + 25 WHERE idUsuario = '{idUser}';"
+                result = cursor.execute(queryInsereCoins)
+                connection.commit()
+                print(f'Usuario {nickname} recebeu 25 coins')
+        except db_error:
+            return(db_error)
 
     def __cadastro(self, cursor, connection, coins, nickname, password, nome, email):
         try:
@@ -565,7 +646,7 @@ class Server():
                 query = """INSERT INTO usuario (coins,nickname,password,nome,email,Mochila_idMochila,Album_idAlbum) values (""" + \
                     coins+",'"+nickname+"','"+password+"','"+nome+"','" + \
                         email+"',"+str(resultado)+","+str(resultado)+""");"""
-                #print(f"{query}")
+                # print(f"{query}")
                 result = cursor.execute(query)
                 connection.commit()
                 #print("===> Todas as querys foram executadas")
@@ -595,15 +676,13 @@ class Server():
                     PRÓXIMO PASSO: MANDAR ESSAS INFORMAÇÕES DE LOGIN PARA SEREM CARREGADAS NA NOSSA TELA INICIAL DO GAME
                     PARA PODER CARREGAR O ALBUM DESSE USUÁRIO, SUA MOCHILA E DEMAIS INFORMAÇÕES.
                 """
-                #print(resultados)
+                # print(resultados)
                 return(("login",) + tuple(resultados[0]))
-                #return("=====> Login realizado com sucesso !")
+                # return("=====> Login realizado com sucesso !")
             else:
                 return("=====> [ERRO] Usuario ou senha invalidos!")
         except db_error:
             return("=====> [ERRO NO BANCO] Erro ao realizar o login !")
-
-
 
 
 # <>retirar carta do album --> incremnta do mochila_has_carta e faz is_ocupado ser 0
