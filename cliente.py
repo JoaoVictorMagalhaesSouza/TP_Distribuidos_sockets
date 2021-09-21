@@ -90,47 +90,6 @@ class Cliente():
                         print("")
                         print("")
                         if (escolha == "1"):  # Loja
-                            print("Pacotinhos disponíveis:")
-                            print("1) 1 carta aleatória = $50 coins.")
-                            print("2) 3 cartas aleatórias = $135 coins.")
-                            print("3) 5 cartas aleatórias = $225 coins.")
-                            pacotinho = input(
-                                f"Você tem {resposta[2]} coins. Escolha qual opção de pacotinho quer comprar: ")
-                            print("")
-                            print("")
-
-                            if (int(resposta[2]) < 50):
-                                print(
-                                    "=====> [ERRO] Voce nao tem moedas suficentes! Faca uma recarga agora!")
-                                continue
-                            elif (pacotinho == "1") and (int(resposta[2]) >= 50):
-                                cartaPacote = []
-                                # Gerar uma carta de 1 a 30.
-                                cartaPacote.append(random.randint(1, 31))
-                                # Padronização da mensagem
-                                mensagem = "loja:50:" + \
-                                    resposta[1]+":"+resposta[7] + \
-                                    ":"+str(cartaPacote[0])
-                                resposta[2] = str(int(resposta[2])-50)
-                            elif (pacotinho == "2") and (int(resposta[2]) >= 135):
-                                cartaPacote = []
-                                for i in range(3):
-                                    cartaPacote.append(random.randint(1, 31))
-                                mensagem = "loja:135:"+resposta[1]+":"+resposta[7]+":"+str(
-                                    cartaPacote[0])+":"+str(cartaPacote[1])+":"+str(cartaPacote[2])
-                                resposta[2] = str(int(resposta[2])-135)
-                            elif (pacotinho == "3") and (int(resposta[2]) >= 225):
-                                cartaPacote = []
-                                for i in range(5):
-                                    cartaPacote.append(random.randint(1, 31))
-                                mensagem = "loja:225:"+resposta[1]+":"+resposta[7]+":"+str(cartaPacote[0])+":"+str(
-                                    cartaPacote[1])+":"+str(cartaPacote[2])+":"+str(cartaPacote[3])+":"+str(cartaPacote[4])
-                                resposta[2] = str(int(resposta[2])-225)
-                            self.__tcp.send(bytes(mensagem, 'ascii'))
-                            respostaLoja = self.__tcp.recv(2048)
-                            respostaLoja = respostaLoja.decode('ascii')
-                            print(respostaLoja)
-
                             mensagem = "login:"+nick+":"+senha
                             self.__tcp.send(bytes(mensagem, 'ascii'))
                             resposta = self.__tcp.recv(2048)
@@ -143,6 +102,59 @@ class Cliente():
                                     item = item.replace(y, "")
                                 novo.append(item)
                             resposta = novo
+                            print("Pacotinhos disponíveis:")
+                            print("1) 1 carta aleatória = $50 coins.")
+                            print("2) 3 cartas aleatórias = $135 coins.")
+                            print("3) 5 cartas aleatórias = $225 coins.")
+                            pacotinho = input(
+                                f"Você tem {resposta[2]} coins. Escolha qual opção de pacotinho quer comprar: ")
+                            print("")
+                            print("")
+
+                            if (int(resposta[2]) < 50):
+                                print(
+                                    "=====> [ERRO] Voce nao tem moedas suficentes!")
+                                continue
+                            elif (pacotinho == "1") and (int(resposta[2]) >= 50):
+                                cartaPacote = []
+                                # Gerar uma carta de 1 a 30.
+                                cartaPacote.append(random.randint(1, 31))
+                                # Padronização da mensagem
+                                mensagem = "loja:50:" + \
+                                    resposta[1]+":"+resposta[7] + \
+                                    ":"+str(cartaPacote[0])
+                                resposta[2] = str(int(resposta[2])-50)
+                                self.__tcp.send(bytes(mensagem, 'ascii'))
+                                respostaLoja = self.__tcp.recv(2048)
+                                respostaLoja = respostaLoja.decode('ascii')
+                                print(respostaLoja)
+                            elif (pacotinho == "2") and (int(resposta[2]) >= 135):
+                                cartaPacote = []
+                                for i in range(3):
+                                    cartaPacote.append(random.randint(1, 31))
+                                mensagem = "loja:135:"+resposta[1]+":"+resposta[7]+":"+str(
+                                    cartaPacote[0])+":"+str(cartaPacote[1])+":"+str(cartaPacote[2])
+                                resposta[2] = str(int(resposta[2])-135)
+                                self.__tcp.send(bytes(mensagem, 'ascii'))
+                                respostaLoja = self.__tcp.recv(2048)
+                                respostaLoja = respostaLoja.decode('ascii')
+                                print(respostaLoja)
+                            elif (pacotinho == "3") and (int(resposta[2]) >= 225):
+                                cartaPacote = []
+                                for i in range(5):
+                                    cartaPacote.append(random.randint(1, 31))
+                                mensagem = "loja:225:"+resposta[1]+":"+resposta[7]+":"+str(cartaPacote[0])+":"+str(
+                                    cartaPacote[1])+":"+str(cartaPacote[2])+":"+str(cartaPacote[3])+":"+str(cartaPacote[4])
+                                resposta[2] = str(int(resposta[2])-225)
+
+                                self.__tcp.send(bytes(mensagem, 'ascii'))
+                                respostaLoja = self.__tcp.recv(2048)
+                                respostaLoja = respostaLoja.decode('ascii')
+                                print(respostaLoja)
+                            else:
+                                print("=====> [ERRO] Digite uma opção válida !")
+
+                            
                             print("")
                             print("")
 
