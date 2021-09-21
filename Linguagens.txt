@@ -28,5 +28,3 @@ Cobol	OK
 Paskal	OK
 Algol	OK
 Dart OK
-
-n precisa pensar em modelo fisico. pequeno nicho7

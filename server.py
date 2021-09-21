@@ -55,7 +55,7 @@ class Server():
                 connection = mysql.connector.connect(host='localhost',
                                                      database='bd_distribuidos',
                                                      user='root',
-                                                     password='1234')
+                                                     password='JVictor@00')
 
                 if connection.is_connected():
                     cursor = connection.cursor()
@@ -341,28 +341,32 @@ class Server():
             nomeAnunciante = []
             precoCarta = []
             ids = []
-            for i in verificacao:
-                # idMochila.append(i[1])
-                aux = i[1]  # Qual o usuario ?
-                query1 = "SELECT * FROM usuario WHERE (Mochila_idMochila = '"+str(
-                    i[1])+"');"
-                cursor = connection.cursor()
-                cursor.execute(query1)
-                verificacao2 = cursor.fetchall()
-                for j in verificacao2:
-                    nomeAnunciante.append(j[2])
+            if(len(verificacao)==0):
+                return("0")
+            else:
 
-                query2 = "SELECT * FROM carta WHERE (idCarta = '" + \
-                    str(i[2])+"');"
-                cursor = connection.cursor()
-                cursor.execute(query2)
-                verificacao3 = cursor.fetchall()
-                for j in verificacao3:
-                    nomeCarta.append(j[1])
+                for i in verificacao:
+                    # idMochila.append(i[1])
+                    aux = i[1]  # Qual o usuario ?
+                    query1 = "SELECT * FROM usuario WHERE (Mochila_idMochila = '"+str(
+                        i[1])+"');"
+                    cursor = connection.cursor()
+                    cursor.execute(query1)
+                    verificacao2 = cursor.fetchall()
+                    for j in verificacao2:
+                        nomeAnunciante.append(j[2])
 
-                precoCarta.append(i[3])
-            for i in range(len(verificacao)):
-                ids.append(i)
+                    query2 = "SELECT * FROM carta WHERE (idCarta = '" + \
+                        str(i[2])+"');"
+                    cursor = connection.cursor()
+                    cursor.execute(query2)
+                    verificacao3 = cursor.fetchall()
+                    for j in verificacao3:
+                        nomeCarta.append(j[1])
+
+                    precoCarta.append(i[3])
+                for i in range(len(verificacao)):
+                    ids.append(i)
             dados["idVenda"] = ids
             dados["Nome"] = nomeAnunciante
             dados["Carta"] = nomeCarta
@@ -569,7 +573,7 @@ class Server():
             #print(f"Q3: {queryRemoveCoins}")
             result = cursor.execute(queryRemoveCoins)
             connection.commit()
-            return("=====> Cartas compradas com sucesso !")
+            return("=====> Cartas compradas com sucesso ! Verifique a mochila. ")
 
         except db_error:
             return("=====> [ERRO NO BANCO] Erro ao comprar carta!")

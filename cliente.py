@@ -13,7 +13,7 @@ class Cliente():
         try:
 
             self.__tcp.connect(endpoint)  # Tentativa de conexão com o server
-            print("Conexão realizada!")
+            #print("Conexão realizada!")
             self.__method()
         except Exception as e:
             print(f"Erro ao estabelecer conexão com o server {e.args}")
@@ -21,25 +21,38 @@ class Cliente():
     def __method(self):  # __ é privado
         try:
             mensagem = ""
-            print(
-                "############################################################################")
-            print("Olá ! Seja bem vindo ao Programming Language Collection")
-            print(" ==> 1) Fazer cadastro.")
-            print(" ==> 2) Fazer login.")
-            print(
-                "############################################################################")
+            print("#################################################################")
+            print("#    Olá ! Seja bem vindo ao Programming Language Collection    #")
+            print("#    1) Fazer cadastro.                                         #")
+            print("#    2) Fazer login.                                            #")
+            print("#    3) Sair do sistema.                                        #")   
+            print("#################################################################")
+            print("")
+            print("")
             escolha = input("Digite a operação: ")
             if (escolha == "1"):
+                print("#################################################################")
+                print("#                   INFORMAÇÕES DE CADASTRO                     #")
+                print("#################################################################")
                 nick = input("Digite seu nickname: ")
                 senha = input("Digite sua senha: ")
                 nome = input("Digite seu nome: ")
                 email = input("Digite seu email: ")
                 mensagem = "cadastro:0:"+nick+":"+senha+":"+nome+":"+email
-            else:
+                print("")
+                print("")
+            elif (escolha == "2"):
+                print("#################################################################")
+                print("#                     INFORMAÇÕES DE LOGIN                      #")
+                print("#################################################################")
                 nick = input("Digite seu nickname: ")
-                senha = input("Digite sua senha: ")
+                senha = input("Digite sua senha: ")               
                 mensagem = "login:"+nick+":"+senha
-            while mensagem != "x":
+                print("")
+                print("")
+            else:
+                mensagem = "3"
+            while mensagem != "3":
                 self.__tcp.send(bytes(mensagem, 'ascii'))
                 resposta = self.__tcp.recv(2048)
                 resposta = resposta.decode('ascii')
@@ -62,16 +75,17 @@ class Cliente():
                     print("")
 
                     while True:
-
-                        print("BEM VINDO(A) AO NOSSO GAME!")
-                        print("1) Acessar a Loja.")
-                        print("2) Inserir Carta da Mochila no Álbum.")
-                        print("3) Visualizar meu Álbum de Figurinhas.")
-                        print("4) Visualizar Cartas na Mochila.")
-                        print("5) Deletar Carta da Mochila.")
-                        print("6) Mover Carta do Álbum para a Mochila.")
-                        print("7) Leiloar/Comprar/Remover uma Carta.")
-                        print("0) Logoff.")
+                        print("*****************************************************************")
+                        print("*    BEM VINDO(A) AO NOSSO GAME!                                *")
+                        print("*    1) Acessar a Loja.                                         *")
+                        print("*    2) Inserir Carta da Mochila no Álbum.                      *")
+                        print("*    3) Visualizar meu Álbum de Figurinhas.                     *")
+                        print("*    4) Visualizar Cartas na Mochila.                           *")
+                        print("*    5) Deletar Carta da Mochila.                               *")
+                        print("*    6) Mover Carta do Álbum para a Mochila.                    *")
+                        print("*    7) Leiloar/Comprar/Remover uma Carta.                      *")
+                        print("*    0) Logoff.                                                 *")
+                        print("*****************************************************************")
                         escolha = input("Digite sua escolha: ")
                         print("")
                         print("")
@@ -81,7 +95,7 @@ class Cliente():
                             print("2) 3 cartas aleatórias = $135 coins.")
                             print("3) 5 cartas aleatórias = $225 coins.")
                             pacotinho = input(
-                                f"Você tem {resposta[2]} coins. Escolha qual pacotinho quer comprar: ")
+                                f"Você tem {resposta[2]} coins. Escolha qual opção de pacotinho quer comprar: ")
                             print("")
                             print("")
 
@@ -116,6 +130,19 @@ class Cliente():
                             respostaLoja = self.__tcp.recv(2048)
                             respostaLoja = respostaLoja.decode('ascii')
                             print(respostaLoja)
+
+                            mensagem = "login:"+nick+":"+senha
+                            self.__tcp.send(bytes(mensagem, 'ascii'))
+                            resposta = self.__tcp.recv(2048)
+                            resposta = resposta.decode('ascii')
+                            resposta = resposta.split(",")
+                            novo = []
+                            for x in resposta:
+                                item = x
+                                for y in ['\n', '\t', '/', '.', '-', '(', ')', "'"]:
+                                    item = item.replace(y, "")
+                                novo.append(item)
+                            resposta = novo
                             print("")
                             print("")
 
@@ -283,7 +310,7 @@ class Cliente():
                                 print("")
 
                             elif (escolhaLeilao == "2"):
-                                print("Cartas à venda: ")
+                                
                                 mensagemCartasLeilao = "mostraCartasLeilao:"
                                 self.__tcp.send(
                                     bytes(mensagemCartasLeilao, 'ascii'))
@@ -291,33 +318,37 @@ class Cliente():
                                 respostaCartasLeilao = respostaCartasLeilao.decode(
                                     'ascii')
                                 # Transformar string em dict
-                                respostaCartasLeilao = eval(
-                                    respostaCartasLeilao)
-                                for i in range(len(respostaCartasLeilao["idVenda"])):
-                                    print(
-                                        f""" => ID: {respostaCartasLeilao["idVenda"][i]}    |    Nome do Vendedor: {respostaCartasLeilao["Nome"][i]}   |   Carta: {respostaCartasLeilao["Carta"][i]}   |   Preço: {respostaCartasLeilao["Preco"][i]}""")
-
-                                escolhaComprar = input(
-                                    "Deseja comprar alguma carta ? 1-Sim | 2-Não :")
-                                if (escolhaComprar == "1"):
-                                    print(f"Você possui {resposta[2]} coins.")
-                                    cartaDesejada = int(
-                                        input("Digite o id da compra que contém sua carta de interesse: "))
-                                    print("A carta desejada é "+respostaCartasLeilao["Carta"][cartaDesejada]+", vendida por "+respostaCartasLeilao["Nome"][cartaDesejada]+" no valor de "+str(
-                                        respostaCartasLeilao["Preco"][cartaDesejada])+" coins.")
-                                    if (int(resposta[2]) >= int(respostaCartasLeilao["Preco"][cartaDesejada])):
-                                        mensagemVenda = "vendeLeilao:" + \
-                                            resposta[7]+":" + \
-                                            respostaCartasLeilao["Nome"][cartaDesejada]
-                                        self.__tcp.send(
-                                            bytes(mensagemVenda, 'ascii'))
-                                        respostaVenda = self.__tcp.recv(2048)
-                                        respostaVenda = respostaVenda.decode(
-                                            'ascii')
-                                        print(respostaVenda)
-                                    else:
+                                if (respostaCartasLeilao=="0"):
+                                    print("=====> Não há cartas anunciadas no leilao!")
+                                else:
+                                    print("Cartas à venda: ")
+                                    respostaCartasLeilao = eval(
+                                        respostaCartasLeilao)
+                                    for i in range(len(respostaCartasLeilao["idVenda"])):
                                         print(
-                                            "=====> [ERRO] Você não possui moedas suficientes para comprar esta carta.")
+                                            f""" => ID: {respostaCartasLeilao["idVenda"][i]}    |    Nome do Vendedor: {respostaCartasLeilao["Nome"][i]}   |   Carta: {respostaCartasLeilao["Carta"][i]}   |   Preço: {respostaCartasLeilao["Preco"][i]}""")
+
+                                    escolhaComprar = input(
+                                        "Deseja comprar alguma carta ? 1-Sim | 2-Não :")
+                                    if (escolhaComprar == "1"):
+                                        print(f"Você possui {resposta[2]} coins.")
+                                        cartaDesejada = int(
+                                            input("Digite o id da compra que contém sua carta de interesse: "))
+                                        print("A carta desejada é "+respostaCartasLeilao["Carta"][cartaDesejada]+", vendida por "+respostaCartasLeilao["Nome"][cartaDesejada]+" no valor de "+str(
+                                            respostaCartasLeilao["Preco"][cartaDesejada])+" coins.")
+                                        if (int(resposta[2]) >= int(respostaCartasLeilao["Preco"][cartaDesejada])):
+                                            mensagemVenda = "vendeLeilao:" + \
+                                                resposta[7]+":" + \
+                                                respostaCartasLeilao["Nome"][cartaDesejada]
+                                            self.__tcp.send(
+                                                bytes(mensagemVenda, 'ascii'))
+                                            respostaVenda = self.__tcp.recv(2048)
+                                            respostaVenda = respostaVenda.decode(
+                                                'ascii')
+                                            print(respostaVenda)
+                                        else:
+                                            print(
+                                                "=====> [ERRO] Você não possui moedas suficientes para comprar esta carta.")
                             elif (escolhaLeilao == "3"):
                                 retiraLeilao = input(
                                     "Tem certeza que deseja remover a carta anunciada ? 1 - Sim | Outro - Não: ")
@@ -342,13 +373,11 @@ class Cliente():
                             break
 
                 mensagem = ""
-                print(
-                    "############################################################################")
-                print("Olá ! Seja bem vindo ao Programming Language Collection")
-                print(" ==> 1) Fazer cadastro.")
-                print(" ==> 2) Fazer login.")
-                print(
-                    "############################################################################")
+                print("#################################################################")
+                print("#    Olá ! Seja bem vindo ao Programming Language Collection    #")
+                print("#    1) Fazer cadastro.                                         #")
+                print("#    2) Fazer login.                                            #")   
+                print("#################################################################")
                 escolha = input("Digite a operação: ")
                 if (escolha == "1"):
                     nick = input("Digite seu nickname: ")

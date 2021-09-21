@@ -7,5 +7,3 @@ INSERT INTO paradigma (nome) VALUES
 ("Procedural"),
 ("Multiparadigma")
 ;
-
-SELECT * from paradigma;

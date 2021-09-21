@@ -30,21 +30,3 @@ INSERT INTO slot (Carta_idCarta) VALUES
 (29),
 (30)
 ;
-
-SELECT * from slot;
-SELECT max(idSlot) from slot;
-
-SELECT * from album;
-DELETE FROM album;
-SELECT * from album_has_slot;
-DELETE FROM album_has_slot;
-SELECT * from usuario;
-SELECT * from usuario where (usuario.nickname = 'a');
-SELECT * from mochila_has_carta;
-SELECT * from leilao;
-
-#2 1 19 300
-DELETE FROM leilao WHERE (Mochila_has_Carta_Mochila_idMochila = '1');
-DELETE FROM usuario WHERE (idUsuario=2);
-UPDATE usuario set coins=300 where (idUsuario=1);
-SELECT * FROM leilao;
