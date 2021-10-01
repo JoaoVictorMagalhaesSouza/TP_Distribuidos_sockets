@@ -144,6 +144,7 @@ class Server():
                 elif (msg[0] == "logout"):
                     rt.stop()
                     rt = None
+                    resposta = ""
                 else:
                     break
 
@@ -447,7 +448,7 @@ class Server():
             cartas = []
             nomeCartas = []
             if (len(verificacao) == 0):
-                return("Voce ainda nao possui cartas no album.")
+                return("0")
             else:
                 for i in verificacao:
                     cartas.append(i[2])

@@ -211,14 +211,17 @@ class Cliente():
                             respostaVisualizaAlbum = self.__tcp.recv(2048)
                             respostaVisualizaAlbum = respostaVisualizaAlbum.decode(
                                 'ascii')
-                            myAlbum = respostaVisualizaAlbum.split(",")
-                            print(f"=====> As cartas do seu album sao: ")
-                            for i in myAlbum:
-                                i = i.replace("'", "")
-                                i = i.replace(" ", "")
-                                i = i.replace("[", "")
-                                i = i.replace("]", "")
-                                print(f"{i}")
+                            if (respostaVisualizaAlbum == "0"):
+                                print("=====> Voce ainda nao possui cartas no album.")
+                            else:
+                                myAlbum = respostaVisualizaAlbum.split(",")
+                                print(f"=====> As cartas do seu album sao: ")
+                                for i in myAlbum:
+                                    i = i.replace("'", "")
+                                    i = i.replace(" ", "")
+                                    i = i.replace("[", "")
+                                    i = i.replace("]", "")
+                                    print(f"{i}")
                             print("")
                             print("")
 
@@ -286,38 +289,41 @@ class Cliente():
                                 "Escolha uma funcionalidade: ")
                             # Ver se já possui uma carta anunciada.
                             if (escolhaLeilao == "1"):
-                                print(f"As cartas que você pode anunciar são: ")
                                 mensagem1 = "minhaMochila:" + \
-                                    resposta[7]  # idMochila
+                                resposta[7]  # idMochila
                                 self.__tcp.send(bytes(mensagem1, 'ascii'))
                                 respostaCartasMochila = self.__tcp.recv(2048)
                                 respostaCartasMochila = respostaCartasMochila.decode(
                                     'ascii')
-                                respostaCartasMochila = respostaCartasMochila.split(
-                                    ",")
-                                j = 0
-                                for i in respostaCartasMochila:
-                                    i = i.replace("'", "")
-                                    i = i.replace(" ", "")
-                                    i = i.replace("[", "")
-                                    i = i.replace("]", "")
-                                    print(f"{i}")
-                                    j += 1
+                                if (respostaCartasMochila=="0"):
+                                    print("=====> Não ha cartas na mochila!")
+                                else:
+                                    print(f"As cartas que você pode anunciar são: ")
+                                    respostaCartasMochila = respostaCartasMochila.split(
+                                        ",")
+                                    j = 0
+                                    for i in respostaCartasMochila:
+                                        i = i.replace("'", "")
+                                        i = i.replace(" ", "")
+                                        i = i.replace("[", "")
+                                        i = i.replace("]", "")
+                                        print(f"{i}")
+                                        j += 1
 
-                                cartaAnunciada = input(
-                                    "Digite o nome da carta a ser anunciada: ")
-                                precoCarta = input(
-                                    "Especifique por quanto deseja leiloar essa carta: ")
+                                    cartaAnunciada = input(
+                                        "Digite o nome da carta a ser anunciada: ")
+                                    precoCarta = input(
+                                        "Especifique por quanto deseja leiloar essa carta: ")
 
-                                mensagemAnuncio = "leiloaCarta:" + \
-                                    resposta[7]+":" + \
-                                    cartaAnunciada+":"+precoCarta
-                                self.__tcp.send(
-                                    bytes(mensagemAnuncio, 'ascii'))
-                                respostaLeiloaCarta = self.__tcp.recv(2048)
-                                respostaLeiloaCarta = respostaLeiloaCarta.decode(
-                                    'ascii')
-                                print(respostaLeiloaCarta)
+                                    mensagemAnuncio = "leiloaCarta:" + \
+                                        resposta[7]+":" + \
+                                        cartaAnunciada+":"+precoCarta
+                                    self.__tcp.send(
+                                        bytes(mensagemAnuncio, 'ascii'))
+                                    respostaLeiloaCarta = self.__tcp.recv(2048)
+                                    respostaLeiloaCarta = respostaLeiloaCarta.decode(
+                                        'ascii')
+                                    print(respostaLeiloaCarta)
                                 print("")
                                 print("")
 
@@ -384,6 +390,7 @@ class Cliente():
                                 bytes('logout:', 'ascii'))
                             break
 
+                
                 mensagem = ""
                 print("#################################################################")
                 print("#    Olá ! Seja bem vindo ao Programming Language Collection    #")
